@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import arff
 
-from assignment1.visualize import get_numeric_cols, get_histograms_for_numeric_data
+from assignment0.visualize import get_numeric_cols, get_histograms_for_numeric_data
 
 if __name__ == '__main__':
     WORKING_DIR = os.getcwd()
