@@ -27,3 +27,10 @@ if __name__ == '__main__':
             num_cols=get_numeric_cols(df),
             dataset_name=dataset
         )
+
+    get_histograms_for_numeric_data(
+        working_dir=WORKING_DIR,
+        df=df_phishing_email_raw_data,
+        num_cols=['DomainLength', 'URLCharProb', 'LetterRatioInURL', 'SpacialCharRatioInURL'],
+        dataset_name="phising_selected"
+    )
