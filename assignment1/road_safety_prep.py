@@ -2,33 +2,38 @@ import pandas as pd
 from typing import Tuple
 
 from assignment1.utils import (check_missing_values,
-                               get_data_types_for_df_columns)
+                               get_data_types_for_df_columns,
+                               check_feature_scaling,
+                               detect_outliers_with_iqr,
+                               check_categorical_variables,
+                               check_correlation_matrix,
+                               check_class_balance)
 
 
 class CheckDatasetCondition:
-    def __init__(self, df: pd.DataFrame):
-        self.df_feature = df[:-1]
-        self.df_target = df[-1]
+    def __init__(self, df: pd.DataFrame, target_var_name: list):
+        self.df_feature = df[[col for col in df.columns if col not in target_var_name]]
+        self.df_target = df[target_var_name]
+        self.target_var = target_var_name[0]
 
     @staticmethod
     def _check_features(df: pd.DataFrame) -> dict:
-        #### Feature selection!!!!!!!!!!!!!!!!
+        # Feature selection!!!!!!!!!!!!!!!!
         feature_analysis: dict = {
             'data_types': get_data_types_for_df_columns(df),
             'missing_values': check_missing_values(df),
-            'range_and_scale': {},
-            'outliers': {},
-            'categorical_vars': {},
-            'multicollinearity': {}
+            'range_and_scale': check_feature_scaling(df),
+            'outliers': detect_outliers_with_iqr(df),
+            'categorical_vars': check_categorical_variables(df),
+            'multicollinearity': check_correlation_matrix(df),
         }
         return feature_analysis
 
-    @staticmethod
-    def _check_target(df: pd.DataFrame) -> dict:
+    def _check_target(self, df: pd.DataFrame) -> dict:
         target_analysis: dict = {
-            'data_types': {},
-            'class_balance': {},
-            'uniques': {}
+            'data_types': get_data_types_for_df_columns(df),
+            'class_balance': check_class_balance(df, self.target_var),
+            'uniques': df[self.target_var].nunique()
         }
         return target_analysis
 

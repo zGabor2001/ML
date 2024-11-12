@@ -11,7 +11,10 @@ if __name__ == '__main__':
     phishing_data: pd.DataFrame = process_phishing_data(PHISHING_RAW_DATA_PATH)
     road_safety_data: pd.DataFrame = process_road_safety_data(ROAD_SAFETY_RAW_DATA_PATH)
 
-    check_dataset_condition = CheckDatasetCondition(road_safety_data)
-    feature_results, target_results = check_dataset_condition.get_dataset_condition()
+    safety_dataset_condition = CheckDatasetCondition(road_safety_data, ['Casualty_Type'])
+    safety_feature_results, safety_target_results = safety_dataset_condition.get_dataset_condition()
+
+    phishing_dataset_condition = CheckDatasetCondition(phishing_data, ['label'])
+    phishing_feature_results, phishing_target_results = phishing_dataset_condition.get_dataset_condition()
 
     print("123")
