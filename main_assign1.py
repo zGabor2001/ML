@@ -1,8 +1,7 @@
 import os
 
-import pandas as pd
-
-from assignment1.process_data import process_phishing_data, process_road_safety_data
+from assignment1.process_data import *
+from assignment1.road_safety_prep import CheckDatasetCondition
 
 if __name__ == '__main__':
     WORKING_DIR: str = os.getcwd()
@@ -11,3 +10,8 @@ if __name__ == '__main__':
 
     phishing_data: pd.DataFrame = process_phishing_data(PHISHING_RAW_DATA_PATH)
     road_safety_data: pd.DataFrame = process_road_safety_data(ROAD_SAFETY_RAW_DATA_PATH)
+
+    check_dataset_condition = CheckDatasetCondition(road_safety_data)
+    feature_results, target_results = check_dataset_condition.get_dataset_condition()
+
+    print("123")
