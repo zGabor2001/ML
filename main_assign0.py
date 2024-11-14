@@ -6,8 +6,8 @@ from assignment0.visualize import get_numeric_cols, get_histograms_for_numeric_d
 
 if __name__ == '__main__':
     WORKING_DIR = os.getcwd()
-    PHISHING_RAW_DATA_PATH: str = WORKING_DIR + "\\data\\PhiUSIIL_Phishing_URL_Dataset.csv"
-    SALARY_RAW_DATA_PATH: str = WORKING_DIR + "\\data\\dataset.arff"
+    PHISHING_RAW_DATA_PATH: str = WORKING_DIR + "/data/PhiUSIIL_Phishing_URL_Dataset.csv"
+    SALARY_RAW_DATA_PATH: str = WORKING_DIR + "/data/dataset.arff"
 
     with open(SALARY_RAW_DATA_PATH, 'r') as f:
         dataset = arff.load(f)
