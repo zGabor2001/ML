@@ -5,6 +5,16 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
 
 
+def select_variables(X, y):
+    from sklearn.feature_selection import RFE
+    from sklearn.svm import SVR
+    # Beispiel für ein lineares SVM-Modell
+    estimator = SVR(kernel="linear")
+    selector = RFE(estimator, n_features_to_select=5, step=1)
+    selector = selector.fit(X, y)
+    print(selector.support_)
+
+
 class SupportVectorMachineClassifier:
     def __init__(self, kernel='linear', C=1.0):
         """Initialize the SVM classifier.
@@ -38,12 +48,14 @@ class SupportVectorMachineClassifier:
         X = df.drop(columns=[target_column])
         y = df[target_column]
 
-        # Encode target if it's categorical
+        #Encode target if it's categorical
         if y.dtype == 'object' or y.dtype.name == 'category':
             y = self.label_encoder.fit_transform(y)
 
         # Handle categorical features if present
         X = pd.get_dummies(X, drop_first=True)
+
+        select_variables(X, y)
 
         # Split the data
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

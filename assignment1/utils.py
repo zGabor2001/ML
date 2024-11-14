@@ -109,7 +109,7 @@ def check_correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
     - pd.DataFrame: The correlation matrix.
     """
     df_num: pd.DataFrame = df.select_dtypes(include=['number'])
-    corr_matrix = df_num.corr()
+    corr_matrix = df_num.corr().abs()
 
     # Plot the heatmap
     # plt.figure(figsize=(12, 8))
@@ -139,6 +139,27 @@ def check_vif(df):
     vif_data["VIF"] = [variance_inflation_factor(df_with_const.values, i) for i in range(df_with_const.shape[1])]
 
     return vif_data
+
+
+def impute_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Imputes missing values in a DataFrame.
+    Numerical columns are filled with the mean,
+    while categorical columns are filled with the mode (most frequent value).
+
+    Parameters:
+    df (pd.DataFrame): Input DataFrame
+
+    Returns:
+    pd.DataFrame: DataFrame with imputed values
+    """
+    for column in df.columns:
+        if df[column].dtype in ['int64', 'float64']:  # Numerical columns
+            df[column].fillna(df[column].mean(), inplace=True)
+        else:  # Categorical columns
+            df[column].fillna(df[column].mode()[0], inplace=True)
+
+    return df
 
 
 def check_class_balance(df, target_var):

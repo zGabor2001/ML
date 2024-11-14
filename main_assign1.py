@@ -1,7 +1,6 @@
 import os
 
 from assignment1.process_data import *
-from assignment1.road_safety_prep import CheckDatasetCondition
 
 if __name__ == '__main__':
     WORKING_DIR: str = os.getcwd()
@@ -11,10 +10,7 @@ if __name__ == '__main__':
     phishing_data: pd.DataFrame = process_phishing_data(PHISHING_RAW_DATA_PATH)
     road_safety_data: pd.DataFrame = process_road_safety_data(ROAD_SAFETY_RAW_DATA_PATH)
 
-    safety_dataset_condition = CheckDatasetCondition(road_safety_data, ['Casualty_Type'])
-    safety_feature_results, safety_target_results = safety_dataset_condition.get_dataset_condition()
-
-    phishing_dataset_condition = CheckDatasetCondition(phishing_data, ['label'])
-    phishing_feature_results, phishing_target_results = phishing_dataset_condition.get_dataset_condition()
+    phishing_model_results = fit_svm_model(phishing_data, 'label')
+    road_safety_model_results = fit_svm_model(road_safety_data, 'Casualty_Type')
 
     print("123")
