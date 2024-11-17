@@ -12,11 +12,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
 
-def process_arff(file_path: str):
+def process_road_safety_arff(file_path: str):
     with open(file_path, 'r') as f:
         dataset = arff.load(f)
-    df_safety: pd.DataFrame = pd.DataFrame(dataset['data'], columns=[attr[0] for attr in dataset['attributes']])
-    df_safety.to_csv('C:\\DS\\repos\\ML\\assignment1\\data\\road_safety.csv', encoding='utf-8')
+    df: pd.DataFrame = pd.DataFrame(dataset['data'], columns=[attr[0] for attr in dataset['attributes']])
+    df.to_csv('C:\\DS\\repos\\ML\\assignment1\\data\\road_safety.csv', encoding='utf-8')
 
 
 def timer(func):
@@ -44,16 +44,12 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     """
     for col in df.columns:
         col_type = df[col].dtypes
-
         if col_type == 'object':
-            # Convert to 'category' if the number of unique values is significantly less than the total count
             if len(df[col].unique()) / len(df[col]) < 0.5:
                 df[col] = df[col].astype('category')
         elif pd.api.types.is_numeric_dtype(col_type):
-            # Downcast integers
             if pd.api.types.is_integer_dtype(col_type):
                 df[col] = pd.to_numeric(df[col], downcast='integer')
-            # Downcast floats
             elif pd.api.types.is_float_dtype(col_type):
                 df[col] = pd.to_numeric(df[col], downcast='float')
 

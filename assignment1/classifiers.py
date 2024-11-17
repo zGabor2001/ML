@@ -2,10 +2,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
-from cuml.svm import SVC as cumlSVC
-from cuml.preprocessing import StandardScaler as cumlStandardScaler
-from cuml.preprocessing import LabelEncoder as cumlLabelEncoder
-import cupy as cp
+# from cuml.svm import SVC as cumlSVC
+# from cuml.preprocessing import StandardScaler as cumlStandardScaler
+# from cuml.preprocessing import LabelEncoder as cumlLabelEncoder
+# import cupy as cp
+import numpy as np
+from joblib import Parallel, delayed
 
 from assignment1.utils import timer
 
@@ -25,6 +27,7 @@ class SupportVectorMachineClassifier:
         self.model = SVC(kernel=self.kernel, C=self.C)
         self.scaler = StandardScaler()
         self.label_encoder = LabelEncoder()
+        self.models = []
 
     @timer
     def preprocess_data(self, df, target_column):
@@ -52,16 +55,20 @@ class SupportVectorMachineClassifier:
         return X_train, X_test, y_train, y_test
 
     @timer
-    def fit(self, X_train, y_train):
-        """Fit the SVM model to the training data.
+    def fit_model(self, X_train, y_train):
+        model = SVC(kernel=self.kernel, C=self.C)
+        model.fit(X_train, y_train)
+        return model
 
-        Parameters:
-        - X_train: np.ndarray
-            Training features.
-        - y_train: np.ndarray
-            Training labels.
-        """
-        self.model.fit(X_train, y_train)
+    @timer
+    def fit(self, X_train, y_train, n_jobs=-1):
+        n_splits = 10
+        X_splits = np.array_split(X_train, n_splits)
+        y_splits = np.array_split(y_train, n_splits)
+
+        self.models = Parallel(n_jobs=n_jobs)(
+            delayed(self.fit_model)(X_splits[i], y_splits[i]) for i in range(n_splits)
+        )
 
     @timer
     def predict(self, X):
@@ -75,7 +82,8 @@ class SupportVectorMachineClassifier:
         - y_pred: np.ndarray
             Predicted labels.
         """
-        return self.model.predict(X)
+        predictions = np.mean([model.predict(X) for model in self.models], axis=0)
+        return np.round(predictions)
 
     @timer
     def evaluate(self, X_test, y_test):
@@ -99,6 +107,7 @@ class SupportVectorMachineClassifier:
         }
 
 
+'''
 class GPUSupportVectorMachineClassifier:
     def __init__(self, kernel='linear', C=1.0):
         """Initialize the GPU-accelerated SVM classifier.
@@ -195,3 +204,4 @@ class GPUSupportVectorMachineClassifier:
             "accuracy": accuracy,
             "classification_report": report
         }
+'''
