@@ -18,7 +18,6 @@ class CheckDatasetCondition:
 
     @staticmethod
     def _check_features(df: pd.DataFrame) -> dict:
-        # Feature selection!!!!!!!!!!!!!!!!
         feature_analysis: dict = {
             'data_types': get_data_types_for_df_columns(df),
             'missing_values': check_missing_values(df),
