@@ -5,9 +5,10 @@ from assignment1.utils import (impute_missing_values,
                                drop_multicorr_variables_form_df,
                                parallel_encoding,
                                optimize_data_types,
-                               timer)
+                               timer,)
 from assignment1.data_prep import CheckDatasetCondition
 from assignment1.classifiers import SupportVectorMachineClassifier
+
 
 @timer
 def process_phishing_data(run_config: dict) -> pd.DataFrame:
@@ -22,7 +23,8 @@ def process_phishing_data(run_config: dict) -> pd.DataFrame:
         df_phishing = df_phishing.reset_index(drop=True)
 
     if run_config['dataset_report']:
-        phishing_dataset_condition = CheckDatasetCondition(df_phishing, run_config['phishing_target'])
+        phishing_dataset_condition = CheckDatasetCondition(
+            df_phishing, run_config['phishing_target'])
         phishing_feature_results, phishing_target_results = phishing_dataset_condition.get_dataset_condition()
 
     if run_config['impute_missing']:
@@ -33,8 +35,9 @@ def process_phishing_data(run_config: dict) -> pd.DataFrame:
     if run_config['dtype_opt']:
         df_phishing: pd.DataFrame = optimize_data_types(df_phishing)
 
-    #df_phishing: pd.DataFrame = drop_multicorr_variables_form_df(df_phishing, run_config, phishing_feature_results['multicollinearity'])
-    df_phishing.to_csv(os.path.join(run_config['data_path'], 'prep_phishing_data.csv'), encoding='utf-8')
+    # df_phishing: pd.DataFrame = drop_multicorr_variables_form_df(df_phishing, run_config, phishing_feature_results['multicollinearity'])
+    df_phishing.to_csv(os.path.join(
+        run_config['data_path'], 'prep_phishing_data.csv'), encoding='utf-8')
 
     return df_phishing
 
@@ -43,7 +46,8 @@ def process_phishing_data(run_config: dict) -> pd.DataFrame:
 def process_road_safety_data(run_config: dict) -> pd.DataFrame:
     file_path = run_config['road_safety_data_path']
     df_safety: pd.DataFrame = pd.read_csv(file_path, index_col=0)
-    df_safety = df_safety.drop(columns=['Accident_Index', 'Vehicle_Reference_df_res'])
+    df_safety = df_safety.drop(
+        columns=['Accident_Index', 'Vehicle_Reference_df_res'])
 
     sample_size = run_config['phishing_sample_size']
     if sample_size is not None:
@@ -52,7 +56,8 @@ def process_road_safety_data(run_config: dict) -> pd.DataFrame:
         df_safety = df_safety.reset_index(drop=True)
 
     if run_config['dataset_report']:
-        safety_dataset_condition = CheckDatasetCondition(df_safety, run_config['road_safety_target'])
+        safety_dataset_condition = CheckDatasetCondition(
+            df_safety, run_config['road_safety_target'])
         safety_feature_results, safety_target_results = safety_dataset_condition.get_dataset_condition()
 
     if run_config['impute_missing']:
@@ -62,8 +67,9 @@ def process_road_safety_data(run_config: dict) -> pd.DataFrame:
     if run_config['dtype_opt']:
         df_safety: pd.DataFrame = optimize_data_types(df_safety)
 
-    #df_safety: pd.DataFrame = drop_multicorr_variables_form_df(df_safety, run_config, safety_feature_results['multicollinearity'])
-    df_safety.to_csv(os.path.join(run_config['data_path'], 'prep_road_data.csv'), encoding='utf-8')
+    # df_safety: pd.DataFrame = drop_multicorr_variables_form_df(df_safety, run_config, safety_feature_results['multicollinearity'])
+    df_safety.to_csv(os.path.join(
+        run_config['data_path'], 'prep_road_data.csv'), encoding='utf-8')
 
     return df_safety
 

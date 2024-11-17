@@ -4,6 +4,8 @@ import dask.dataframe as dd
 import time
 from functools import wraps
 import arff
+import os
+from datetime import datetime
 
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.tools.tools import add_constant
@@ -12,11 +14,42 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
 
+def save_run_results(file_path: str, config: dict, accuracy: float, dataset: str):
+    """
+    Save the run configuration, accuracy, and datetime of a run into a CSV file.
+    Append the results to the existing file if it exists.
+
+    :param file_path: Path to the CSV file where results should be saved.
+    :param config: The configuration dictionary for the run.
+    :param accuracy: The accuracy result of the run.
+    :param dataset: The name of the dataset (e.g., 'phishing', 'road_safety').
+    """
+    # Prepare data to save
+    run_entry = {
+        'datetime': datetime.now().isoformat(),
+        'dataset': dataset,
+        'accuracy': accuracy,
+        'config': str(config)  # Convert dictionary to string for saving
+    }
+
+    # Check if file exists and append or create a new one
+    if os.path.exists(file_path):
+        results_df = pd.read_csv(file_path)
+        results_df = pd.concat(
+            [results_df, pd.DataFrame([run_entry])], ignore_index=True)
+    else:
+        results_df = pd.DataFrame([run_entry])
+
+    results_df.to_csv(file_path, index=False)
+
+
 def process_road_safety_arff(file_path: str):
     with open(file_path, 'r') as f:
         dataset = arff.load(f)
-    df: pd.DataFrame = pd.DataFrame(dataset['data'], columns=[attr[0] for attr in dataset['attributes']])
-    df.to_csv('C:\\DS\\repos\\ML\\assignment1\\data\\road_safety.csv', encoding='utf-8')
+    df: pd.DataFrame = pd.DataFrame(dataset['data'], columns=[
+                                    attr[0] for attr in dataset['attributes']])
+    df.to_csv('C:\\DS\\repos\\ML\\assignment1\\data\\road_safety.csv',
+              encoding='utf-8')
 
 
 def timer(func):
@@ -103,7 +136,8 @@ def check_feature_scaling(df: pd.DataFrame) -> pd.DataFrame:
     - pd.DataFrame: A DataFrame with min, max, mean, and std for each numerical column.
     """
     numerical_columns: pd.DataFrame = df.select_dtypes(include=['number'])
-    scaling_stats: pd.DataFrame = numerical_columns.describe().T[['min', 'max', 'mean', 'std']]
+    scaling_stats: pd.DataFrame = numerical_columns.describe(
+    ).T[['min', 'max', 'mean', 'std']]
     return scaling_stats
 
 
@@ -126,7 +160,8 @@ def detect_outliers_with_iqr(df: pd.DataFrame) -> pd.DataFrame:
         iqr = q3 - q1
         lower_bound = q1 - 1.5 * iqr
         upper_bound = q3 + 1.5 * iqr
-        outliers_df[col] = (numerical_columns[col] < lower_bound) | (numerical_columns[col] > upper_bound)
+        outliers_df[col] = (numerical_columns[col] < lower_bound) | (
+            numerical_columns[col] > upper_bound)
 
     return outliers_df
 
@@ -143,7 +178,8 @@ def check_categorical_variables(df: pd.DataFrame) -> list:
     Returns:
     - list: A list of column names that are categorical.
     """
-    categorical_columns: list = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    categorical_columns: list = df.select_dtypes(
+        include=['object', 'category']).columns.tolist()
 
     encoded_categorical_columns = []
     for col in df.select_dtypes(include=['number']).columns:
@@ -170,7 +206,8 @@ def check_correlation_matrix(df: pd.DataFrame, threshold: float = 0.8) -> list:
     df_num: pd.DataFrame = df.select_dtypes(include=['number'])
     corr_matrix = df_num.corr().abs()
 
-    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    upper = corr_matrix.where(
+        np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 
     high_corr_var = [(column, row) for column in upper.columns for row in upper.index if
                      abs(upper.loc[row, column]) > threshold]
@@ -185,7 +222,8 @@ def calculate_vif_for_columns(df, columns):
 
     vif_data = pd.DataFrame()
     vif_data['Variable'] = df_with_const.columns
-    vif_data['VIF'] = [variance_inflation_factor(df_with_const.values, i) for i in range(df_with_const.shape[1])]
+    vif_data['VIF'] = [variance_inflation_factor(
+        df_with_const.values, i) for i in range(df_with_const.shape[1])]
 
     return vif_data
 
@@ -256,8 +294,10 @@ def get_variables_with_pca(df: pd.DataFrame, n_comp: int, threshold: float = 0.5
     pca.fit(df_scaled)
     loadings = pca.components_
 
-    loadings_df = pd.DataFrame(loadings.T, columns=[f'PC{i + 1}' for i in range(n_comp)], index=df.columns)
-    important_variables = loadings_df.apply(lambda x: np.abs(x) > threshold, axis=0)
+    loadings_df = pd.DataFrame(
+        loadings.T, columns=[f'PC{i + 1}' for i in range(n_comp)], index=df.columns)
+    important_variables = loadings_df.apply(
+        lambda x: np.abs(x) > threshold, axis=0)
     important_vars = important_variables.any(axis=1)
 
     return loadings_df.index[important_vars].tolist()
@@ -290,7 +330,8 @@ def label_encode(df: pd.DataFrame, le: LabelEncoder) -> pd.DataFrame:
 @timer
 def drop_multicorr_variables_form_df(df: pd.DataFrame, config: dict, multicorr_cols: list):
     if config['remove_vars_multicorr']:
-        variables_to_remove = list(set(select_variable_to_remove(df, multicorr_cols)))
+        variables_to_remove = list(
+            set(select_variable_to_remove(df, multicorr_cols)))
     elif config['remove_vars_pca']:
         df_safety_numeric = df.select_dtypes(include=['float64', 'int64'])
         variables_to_remove = list(set(get_variables_with_pca(df_safety_numeric,

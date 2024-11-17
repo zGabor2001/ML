@@ -4,8 +4,11 @@ import pandas as pd
 
 from assignment1.process_data import *
 
+from assignment1.utils import save_run_results
+
 if __name__ == '__main__':
     WORKING_DIR: str = os.getcwd()
+    RESULTS_FILE = os.path.join(WORKING_DIR, 'run_results.csv')
 
     RUN_CONFIG = {
         'data_path': WORKING_DIR + "/assignment1/data",
@@ -23,10 +26,16 @@ if __name__ == '__main__':
         'phishing_kernel_type': 'linear',
         'phishing_model_c': 1.0,
         'road_safety_target': 'Casualty_Severity',
-        'road_safety_sample_size': 1000,    # if None all data is used
+        'road_safety_sample_size': None,    # if None all data is used
         'road_safety_kernel_type': 'linear',
         'road_safety_model_c': 1.0,
     }
+
+    print('RUN_CONFIG:\n')
+
+    for key, value in RUN_CONFIG.items():
+        print(key, ' : ', value)
+
     if RUN_CONFIG['prep_data']:
         phishing_data: pd.DataFrame = process_phishing_data(RUN_CONFIG)
         road_safety_data: pd.DataFrame = process_road_safety_data(RUN_CONFIG)
@@ -46,6 +55,8 @@ if __name__ == '__main__':
                                                      )
 
         print('phishing', RUN_CONFIG, phishing_model_results['accuracy'])
+        save_run_results(RESULTS_FILE, RUN_CONFIG,
+                         phishing_model_results['accuracy'], 'phishing')
 
         road_safety_model_results: dict = fit_svm_model(df=road_safety_data,
                                                         target=RUN_CONFIG['road_safety_target'],
@@ -54,3 +65,5 @@ if __name__ == '__main__':
                                                         )
 
         print('road', RUN_CONFIG, road_safety_model_results['accuracy'])
+        save_run_results(RESULTS_FILE, RUN_CONFIG,
+                         road_safety_model_results['accuracy'], 'road_safety')
