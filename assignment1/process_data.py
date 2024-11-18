@@ -22,9 +22,11 @@ def process_phishing_data(run_config: dict) -> pd.DataFrame:
             lambda x: x.sample(n=sample_size, random_state=42))
         df_phishing = df_phishing.reset_index(drop=True)
 
+
     if run_config['dataset_report']:
         phishing_dataset_condition = CheckDatasetCondition(
             df_phishing, run_config['phishing_target'])
+        phishing_dataset_condition.get_plots_for_dataset()
         phishing_feature_results, phishing_target_results = phishing_dataset_condition.get_dataset_condition()
 
     if run_config['impute_missing']:

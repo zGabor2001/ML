@@ -42,6 +42,15 @@ def save_run_results(file_path: str, config: dict, accuracy: dict, dataset: str)
 
 
 def process_road_safety_arff(file_path: str):
+    """
+    Processes the ARFF file containing road safety data and saves it as a CSV file.
+
+    Args:
+    - file_path (str): The path to the ARFF file that contains the road safety data.
+
+    This function reads the ARFF file, loads the data into a pandas DataFrame, and then
+    saves it as a CSV file at the specified location ('C:\\DS\\repos\\ML\\assignment1\\data\\road_safety.csv').
+    """
     with open(file_path, 'r') as f:
         dataset = arff.load(f)
     df: pd.DataFrame = pd.DataFrame(dataset['data'], columns=[
@@ -51,6 +60,19 @@ def process_road_safety_arff(file_path: str):
 
 
 def timer(func):
+    """
+    A decorator to measure and print the execution time of a function.
+
+    Args:
+    - func (function): The function to be wrapped by the timer decorator.
+
+    Returns:
+    - wrapper (function): A wrapped function that calculates and prints the time
+                           taken to execute the original function.
+
+    This decorator can be used to wrap functions and output their execution time
+    in seconds.
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -215,6 +237,22 @@ def check_correlation_matrix(df: pd.DataFrame, threshold: float = 0.8) -> list:
 
 @timer
 def calculate_vif_for_columns(df, columns):
+    """
+    Calculate the Variance Inflation Factor (VIF) for the specified columns in a DataFrame.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing the data.
+    - columns (list): A list of column names for which to calculate the VIF.
+
+    Returns:
+    - pd.DataFrame: A DataFrame with two columns:
+        - 'Variable': The name of each variable (column).
+        - 'VIF': The corresponding VIF value for each variable.
+
+    This function calculates the VIF for each specified column in the provided DataFrame.
+    VIF is a measure of multicollinearity, with higher values indicating higher correlation
+    between the columns, and lower values suggesting less collinearity.
+    """
     df_subset = df[columns]
     df_with_const = add_constant(df_subset)
 
@@ -228,6 +266,21 @@ def calculate_vif_for_columns(df, columns):
 
 @timer
 def select_variable_to_remove(df, pairs):
+    """
+    Select the variable to remove based on the highest Variance Inflation Factor (VIF)
+    from a list of variable pairs.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing the data.
+    - pairs (list): A list of tuples, where each tuple contains two variable names (column names) to compare.
+
+    Returns:
+    - list: A list of variables (column names) that should be removed based on the VIF comparison.
+
+    This function compares the VIF of pairs of variables and selects the one with the highest VIF to remove.
+    The process is repeated for each pair in the provided list, and the variable to remove is added to the
+    'variables_to_remove' list.
+    """
     variables_to_remove = []
 
     for pair in pairs:
@@ -285,6 +338,23 @@ def check_class_balance(df, target_var):
 
 @timer
 def get_variables_with_pca(df: pd.DataFrame, n_comp: int, threshold: float = 0.5) -> pd.DataFrame:
+    """
+    Perform Principal Component Analysis (PCA) on the given DataFrame and identify important variables
+    based on the loadings of the first 'n_comp' principal components.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing numerical data.
+    - n_comp (int): The number of principal components to compute.
+    - threshold (float, optional): The absolute value threshold for identifying important variables
+                                   (default is 0.5).
+
+    Returns:
+    - list: A list of column names that are deemed important based on the PCA loadings.
+
+    This function scales the input data using StandardScaler, performs PCA to find the loadings of
+    the first 'n_comp' components, and identifies variables with absolute loadings greater than the
+    specified threshold.
+    """
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
 
@@ -303,6 +373,18 @@ def get_variables_with_pca(df: pd.DataFrame, n_comp: int, threshold: float = 0.5
 
 @timer
 def pd_label_encode(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Perform label encoding for categorical columns in a DataFrame.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing categorical data.
+
+    Returns:
+    - pd.DataFrame: The DataFrame with label-encoded categorical columns.
+
+    This function converts categorical columns (object data type) in the DataFrame to numerical values
+    using label encoding. Each unique category is assigned a unique integer code.
+    """
     for column in df.select_dtypes(include=['object']).columns:
         df[column] = pd.Categorical(df[column]).codes
     return df
@@ -310,6 +392,19 @@ def pd_label_encode(df: pd.DataFrame) -> pd.DataFrame:
 
 @timer
 def parallel_encoding(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Perform parallel label encoding on categorical columns in a DataFrame using Dask.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing categorical data.
+
+    Returns:
+    - pd.DataFrame: The DataFrame with label-encoded categorical columns.
+
+    This function converts categorical columns in the DataFrame to numerical codes using label encoding
+    while utilizing Dask to perform the operation in parallel across multiple partitions,
+    improving performance for large datasets.
+    """
     ddf = dd.from_pandas(df, npartitions=4)
     le = LabelEncoder()
     ddf_encoded = ddf.map_partitions(label_encode, le)
@@ -319,6 +414,19 @@ def parallel_encoding(df: pd.DataFrame) -> pd.DataFrame:
 
 @timer
 def label_encode(df: pd.DataFrame, le: LabelEncoder) -> pd.DataFrame:
+    """
+    Label encode the categorical columns in a DataFrame using the provided LabelEncoder.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing categorical columns.
+    - le (LabelEncoder): A fitted LabelEncoder instance.
+
+    Returns:
+    - pd.DataFrame: The DataFrame with label-encoded categorical columns.
+
+    This function applies label encoding to all categorical columns (non-numeric) in the DataFrame using
+    a provided LabelEncoder object. It converts each category into a corresponding numeric label.
+    """
     for column in df.columns:
         if not pd.api.types.is_numeric_dtype(df[column]):
             df[column] = le.fit_transform(df[column].astype(str))
@@ -327,6 +435,22 @@ def label_encode(df: pd.DataFrame, le: LabelEncoder) -> pd.DataFrame:
 
 @timer
 def drop_multicorr_variables_form_df(df: pd.DataFrame, config: dict, multicorr_cols: list):
+    """
+    Drop variables from a DataFrame based on multicollinearity or PCA criteria.
+
+    Args:
+    - df (pd.DataFrame): The input DataFrame containing the data.
+    - config (dict): Configuration dictionary with flags for removing variables based on multicollinearity
+                     or PCA.
+    - multicorr_cols (list): A list of column pairs to check for multicollinearity.
+
+    Returns:
+    - pd.DataFrame: The modified DataFrame with selected variables removed based on the criteria.
+
+    This function either removes variables with high multicollinearity or uses PCA to remove variables
+    that are least significant, based on the provided configuration. The multicollinearity check uses
+    the VIF method, and PCA removes variables with the lowest loadings.
+    """
     if config['remove_vars_multicorr']:
         variables_to_remove = list(
             set(select_variable_to_remove(df, multicorr_cols)))

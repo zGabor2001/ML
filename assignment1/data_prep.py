@@ -1,4 +1,3 @@
-import pandas as pd
 from typing import Tuple
 
 from assignment1.utils import (check_missing_values,
@@ -8,6 +7,7 @@ from assignment1.utils import (check_missing_values,
                                check_categorical_variables,
                                check_correlation_matrix,
                                check_class_balance)
+from assignment1.plots import *
 
 
 class CheckDatasetCondition:
@@ -40,3 +40,10 @@ class CheckDatasetCondition:
         feature_results: dict = self._check_features(self.df_feature)
         target_results: dict = self._check_target(self.df_target)
         return feature_results, target_results
+
+    def get_plots_for_dataset(self) -> None:
+        get_histograms_for_df_numerics(self.df_feature)
+        get_boxplots_for_df_numerics(self.df_feature)
+        get_pairplots_for_df_numerics(self.df_feature)
+
+

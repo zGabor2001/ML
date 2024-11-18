@@ -10,13 +10,13 @@ if __name__ == '__main__':
         'data_path': WORKING_DIR + "/assignment1/data",
         'phishing_data_path': WORKING_DIR + "/assignment0/data/PhiUSIIL_Phishing_URL_Dataset.csv",
         'road_safety_data_path': WORKING_DIR + "/assignment1/data/road_safety.csv",
-        'prep_data': False, #!!!!! If false previous runs sample size is going to be used
-        'train_models': True,
+        'prep_data': True, #!!!!! If false previous runs sample size is going to be used
+        'train_models': False,
         'impute_missing': True,
         'remove_vars_multicorr': False,
         'remove_vars_pca': False,
         'dtype_opt': True,
-        'dataset_report': False,
+        'dataset_report': True,
         'phishing_target': 'label',
         'phishing_sample_size': None,   # if None all data is used
         'phishing_kernel_type': 'linear',
