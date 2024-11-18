@@ -92,6 +92,6 @@ def fit_svm_model(df: pd.DataFrame, target: str, kernel: str, c: float) -> dict:
 
     x_train, x_test, y_train, y_test = svm.preprocess_data(df, target)
     svm.fit(x_train, y_train)
-    results = svm.evaluate(x_test, y_test)
+    results = svm.cross_validate(df, target)
 
     return results

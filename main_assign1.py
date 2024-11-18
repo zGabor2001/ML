@@ -1,7 +1,3 @@
-import os
-
-import pandas as pd
-
 from assignment1.process_data import *
 
 from assignment1.utils import save_run_results
@@ -14,7 +10,7 @@ if __name__ == '__main__':
         'data_path': WORKING_DIR + "/assignment1/data",
         'phishing_data_path': WORKING_DIR + "/assignment0/data/PhiUSIIL_Phishing_URL_Dataset.csv",
         'road_safety_data_path': WORKING_DIR + "/assignment1/data/road_safety.csv",
-        'prep_data': False,
+        'prep_data': False, #!!!!! If false previous runs sample size is going to be used
         'train_models': True,
         'impute_missing': True,
         'remove_vars_multicorr': False,
@@ -26,7 +22,7 @@ if __name__ == '__main__':
         'phishing_kernel_type': 'linear',
         'phishing_model_c': 1.0,
         'road_safety_target': 'Casualty_Severity',
-        'road_safety_sample_size': None,    # if None all data is used
+        'road_safety_sample_size': 1000,    # if None all data is used
         'road_safety_kernel_type': 'linear',
         'road_safety_model_c': 1.0,
     }
@@ -54,9 +50,9 @@ if __name__ == '__main__':
                                                      c=RUN_CONFIG['phishing_model_c']
                                                      )
 
-        print('phishing', RUN_CONFIG, phishing_model_results['accuracy'])
+        print('phishing', RUN_CONFIG, phishing_model_results)
         save_run_results(RESULTS_FILE, RUN_CONFIG,
-                         phishing_model_results['accuracy'], 'phishing')
+                         phishing_model_results, 'phishing')
 
         road_safety_model_results: dict = fit_svm_model(df=road_safety_data,
                                                         target=RUN_CONFIG['road_safety_target'],
@@ -64,6 +60,6 @@ if __name__ == '__main__':
                                                         c=RUN_CONFIG['road_safety_model_c']
                                                         )
 
-        print('road', RUN_CONFIG, road_safety_model_results['accuracy'])
+        print('road', RUN_CONFIG, road_safety_model_results)
         save_run_results(RESULTS_FILE, RUN_CONFIG,
-                         road_safety_model_results['accuracy'], 'road_safety')
+                         road_safety_model_results, 'road_safety')

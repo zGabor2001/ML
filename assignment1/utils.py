@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
 
-def save_run_results(file_path: str, config: dict, accuracy: float, dataset: str):
+def save_run_results(file_path: str, config: dict, accuracy: dict, dataset: str):
     """
     Save the run configuration, accuracy, and datetime of a run into a CSV file.
     Append the results to the existing file if it exists.
@@ -24,15 +24,13 @@ def save_run_results(file_path: str, config: dict, accuracy: float, dataset: str
     :param accuracy: The accuracy result of the run.
     :param dataset: The name of the dataset (e.g., 'phishing', 'road_safety').
     """
-    # Prepare data to save
     run_entry = {
         'datetime': datetime.now().isoformat(),
         'dataset': dataset,
         'accuracy': accuracy,
-        'config': str(config)  # Convert dictionary to string for saving
+        'config': str(config)
     }
 
-    # Check if file exists and append or create a new one
     if os.path.exists(file_path):
         results_df = pd.read_csv(file_path)
         results_df = pd.concat(
@@ -55,10 +53,10 @@ def process_road_safety_arff(file_path: str):
 def timer(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        start_time = time.time()  # Record start time
-        result = func(*args, **kwargs)  # Execute the function
-        end_time = time.time()  # Record end time
-        duration = end_time - start_time  # Calculate the duration
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        duration = end_time - start_time
         print(f"{func.__name__} executed in {duration:.4f} seconds")
         return result
     return wrapper
