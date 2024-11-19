@@ -16,8 +16,10 @@ import dask.dataframe as dd
 import models
 
 RANDOM_STATE = 42
-PHISHING_DATA_SAMPLE = 100
-ROAD_SAFETY_SAMPLE_SIZE = 100
+BREAST_SAMPLE_SIZE = None
+LOAN_SAMPLE_SIZE = None
+PHISHING_DATA_SAMPLE = 5000
+ROAD_SAFETY_SAMPLE_SIZE = 3148
 PHISHING_TARGET = 'label'
 ROAD_SAFETY_TARGET = 'Casualty_Severity'
 
@@ -75,24 +77,6 @@ def timer(func):
         print(f"{func.__name__} executed in {duration:.4f} seconds")
         return result
     return wrapper
-
-
-@timer
-def find_best_estimator(
-        classifier,
-        param_grid: dict,
-        holdout_X_train,
-        holdout_Y_train,
-        cv: int = 5,
-) -> GridSearchCV:
-    grid_search = GridSearchCV(
-        classifier,
-        param_grid=param_grid,
-        cv=cv,
-        scoring="accuracy"
-    )
-    grid_search.fit(holdout_X_train, holdout_Y_train)
-    return grid_search.best_estimator_
 
 
 @timer
@@ -158,6 +142,7 @@ def label_encode(df: pd.DataFrame, le: LabelEncoder) -> pd.DataFrame:
             df[column] = le.fit_transform(df[column].astype(str))
     return df
 
+
 @timer
 def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -183,26 +168,29 @@ def optimize_data_types(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def sample_dataset(df, sample_size, target):
+    if sample_size is not None:
+        df = df.groupby(target).apply(
+            lambda x: x.sample(n=sample_size, random_state=42))
+        df = df.reset_index(drop=True)
+    return df
+
+
 def prep_breast_cancer_data(df):
+    df = sample_dataset(df, BREAST_SAMPLE_SIZE, 'class')
     df['class'] = df['class'].astype(int)
     X = df.drop(columns=['ID', 'class'])
     Y = df['class']
     return X, Y
 
 
-def prep_fishing_data(df):
+def prep_phishing_data(df):
     df = df.drop(columns='FILENAME')
 
-    sample_size = PHISHING_DATA_SAMPLE
-    if sample_size is not None:
-        df = df.groupby(PHISHING_TARGET).apply(
-            lambda x: x.sample(n=sample_size, random_state=42))
-        df = df.reset_index(drop=True)
+    df = sample_dataset(df, PHISHING_DATA_SAMPLE, PHISHING_TARGET)
 
     df: pd.DataFrame = impute_missing_values(df)
-
     df: pd.DataFrame = parallel_encoding(df)
-
     df: pd.DataFrame = optimize_data_types(df)
 
     X = df.drop(columns=[PHISHING_TARGET])
@@ -215,11 +203,7 @@ def prep_road_safety_data(df):
     df = df.drop(
         columns=['Accident_Index', 'Vehicle_Reference_df_res'])
 
-    sample_size = ROAD_SAFETY_SAMPLE_SIZE
-    if sample_size is not None:
-        df = df.groupby(ROAD_SAFETY_TARGET).apply(
-            lambda x: x.sample(n=sample_size, random_state=42))
-        df = df.reset_index(drop=True)
+    df = sample_dataset(df, ROAD_SAFETY_SAMPLE_SIZE, ROAD_SAFETY_TARGET)
 
     df: pd.DataFrame = impute_missing_values(df)
     df: pd.DataFrame = parallel_encoding(df)
@@ -228,11 +212,39 @@ def prep_road_safety_data(df):
     return df.drop(columns=[ROAD_SAFETY_TARGET]), df[ROAD_SAFETY_TARGET]
 
 
+def prep_loan_data(df):
+    df = df.drop(columns=['ID'])
+    df = sample_dataset(df, LOAN_SAMPLE_SIZE, 'grade')
+
+    X = df.drop(columns=['grade'])
+
+    numeric_columns = X.select_dtypes(include=['float64', 'int64']).columns
+
+    # standardize the numeric columns
+    X[numeric_columns] = StandardScaler().fit_transform(X[numeric_columns])
+
+    # one hot encode the categorical columns
+    categorical_columns = X.select_dtypes(include=['object']).columns
+    X = pd.get_dummies(X, columns=categorical_columns)
+
+    Y = df['grade']
+
+    return X, Y
 
 
+model_results = []
+for key in df_dict.keys():
+    if key == 'breast_cancer':
+        X, Y = prep_breast_cancer_data(df_dict[key])
+    elif key == 'phishing':
+        X, Y = prep_phishing_data(df_dict[key])
+    elif key == 'road_safety':
+        X, Y = prep_road_safety_data(df_dict[key])
+    elif key == 'loan':
+        continue
+    #     X, Y = prep_loan_data(df_dict[key])
+    else:
+        raise KeyError('Invalid dataset key')
+    model_results.append(models.run_models(X, Y, 42))
 
-X, Y = prep_road_safety_data(df_dict['road_safety'])
-
-model_results = models.run_models(X, Y, 42)
-
-
+print(model_results)

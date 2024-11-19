@@ -36,11 +36,13 @@ def timer(func):
         return result
     return wrapper
 
+
 @timer
 def run_models(X, Y, RANDOM_STATE):
     holdout_X_train, holdout_X_test, holdout_Y_train, holdout_Y_test = train_test_split(X, Y, test_size=0.3,
                                                                                         random_state=RANDOM_STATE)
-    cross_validation_split = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cross_validation_split = StratifiedKFold(
+        n_splits=5, shuffle=True, random_state=42)
 
     def get_metrics_dict(
             accuracy: float,
@@ -59,13 +61,15 @@ def run_models(X, Y, RANDOM_STATE):
     def find_best_estimator(
             classifier,
             param_grid: dict,
-            cv: int = 5
+            cv: int = 5,
+            n_jobs: int = -1
     ) -> GridSearchCV:
         grid_search = GridSearchCV(
             classifier,
             param_grid=param_grid,
             cv=cv,
-            scoring="accuracy"
+            scoring="accuracy",
+            n_jobs=n_jobs
         )
         grid_search.fit(holdout_X_train, holdout_Y_train)
         return grid_search.best_estimator_
@@ -82,14 +86,17 @@ def run_models(X, Y, RANDOM_STATE):
         holdout_y_pred = classifier.predict(holdout_X_test)
         holdout_results = get_metrics_dict(
             accuracy=accuracy_score(holdout_Y_test, holdout_y_pred),
-            f1=f1_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            precision=precision_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            recall=recall_score(holdout_Y_test, holdout_y_pred, average='macro'),
+            f1=f1_score(holdout_Y_test, holdout_y_pred, average='weighted'),
+            precision=precision_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
+            recall=recall_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
         )
 
         # Cross-validation
         cv_scores = cross_validate(classifier, X, Y, cv=cross_validation_split,
                                    scoring=['accuracy', 'f1', 'precision', 'recall'])
+
         cv_results = get_metrics_dict(
             accuracy=cv_scores['test_accuracy'].mean(),
             f1=cv_scores['test_f1'].mean(),
@@ -119,16 +126,22 @@ def run_models(X, Y, RANDOM_STATE):
         ]
 
     rf_classifiers = [
-        RandomForestClassifier(n_estimators=100, min_samples_split=2, min_samples_leaf=1),
-        RandomForestClassifier(n_estimators=200, min_samples_split=4, min_samples_leaf=1),
-        RandomForestClassifier(n_estimators=100, min_samples_split=2, min_samples_leaf=4, max_depth=15),
-        RandomForestClassifier(n_estimators=150, min_samples_split=5, min_samples_leaf=2, max_depth=20),
-        RandomForestClassifier(n_estimators=250, min_samples_split=3, min_samples_leaf=3, max_depth=10)
+        RandomForestClassifier(
+            n_estimators=100, min_samples_split=2, min_samples_leaf=1),
+        RandomForestClassifier(
+            n_estimators=200, min_samples_split=4, min_samples_leaf=1),
+        RandomForestClassifier(
+            n_estimators=100, min_samples_split=2, min_samples_leaf=4, max_depth=15),
+        RandomForestClassifier(
+            n_estimators=150, min_samples_split=5, min_samples_leaf=2, max_depth=20),
+        RandomForestClassifier(
+            n_estimators=250, min_samples_split=3, min_samples_leaf=3, max_depth=10)
     ]
 
     rf_results = []
     for classifier in rf_classifiers:
-        rf_results.extend(run_random_forest(classifier))  # Assumes run_random_forest is defined elsewhere
+        # Assumes run_random_forest is defined elsewhere
+        rf_results.extend(run_random_forest(classifier))
 
     rf_results_df = pd.DataFrame(rf_results)
     rf_results_df.sort_values(by='accuracy', ascending=False).round(3)
@@ -164,9 +177,11 @@ def run_models(X, Y, RANDOM_STATE):
 
         holdout_results = get_metrics_dict(
             accuracy=accuracy_score(holdout_Y_test, holdout_y_pred),
-            f1=f1_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            precision=precision_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            recall=recall_score(holdout_Y_test, holdout_y_pred, average='macro'),
+            f1=f1_score(holdout_Y_test, holdout_y_pred, average='weighted'),
+            precision=precision_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
+            recall=recall_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
         )
 
         # cross validation
@@ -203,9 +218,12 @@ def run_models(X, Y, RANDOM_STATE):
     mlp_classifiers = [
         MLPClassifier(hidden_layer_sizes=(100,), max_iter=200),
         MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=200),
-        MLPClassifier(hidden_layer_sizes=(200,), max_iter=300, activation="logistic"),
-        MLPClassifier(hidden_layer_sizes=(100, 50, 25), max_iter=300, solver="lbfgs"),
-        MLPClassifier(hidden_layer_sizes=(300,), max_iter=500, activation="identity")
+        MLPClassifier(hidden_layer_sizes=(200,),
+                      max_iter=300, activation="logistic"),
+        MLPClassifier(hidden_layer_sizes=(100, 50, 25),
+                      max_iter=300, solver="lbfgs"),
+        MLPClassifier(hidden_layer_sizes=(300,),
+                      max_iter=500, activation="identity")
     ]
 
     mlp_results = []
@@ -218,14 +236,19 @@ def run_models(X, Y, RANDOM_STATE):
     mlp_param_grid = {
         'hidden_layer_sizes': [(50,), (100,), (200,), (100, 50), (100, 50, 25)],
         'max_iter': [200, 300, 500],
-        'activation': ['relu', 'tanh', 'logistic'],  # Optional for activation exploration
+        # Optional for activation exploration
+        'activation': ['relu', 'tanh', 'logistic'],
         'solver': ['adam', 'sgd'],  # Optional for solver exploration
     }
 
+    # run MLP GridSearchCV single-threaded -
+    # there is unfortunately no very reliable way to filter the ConvergenceWarning in the child processes spawned by GridSearchCV
+    # see https://github.com/scikit-learn/scikit-learn/issues/27561
     best_mlp = find_best_estimator(
         classifier=MLPClassifier(),
         param_grid=mlp_param_grid,
-        cv=5
+        cv=5,
+        n_jobs=1
     )
 
     best_mlp_results = pd.DataFrame(run_mlp(best_mlp))
@@ -244,9 +267,11 @@ def run_models(X, Y, RANDOM_STATE):
         holdout_y_pred = pipeline.predict(holdout_X_test)
         holdout_results = get_metrics_dict(
             accuracy=accuracy_score(holdout_Y_test, holdout_y_pred),
-            f1=f1_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            precision=precision_score(holdout_Y_test, holdout_y_pred, average='macro'),
-            recall=recall_score(holdout_Y_test, holdout_y_pred, average='macro'),
+            f1=f1_score(holdout_Y_test, holdout_y_pred, average='weighted'),
+            precision=precision_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
+            recall=recall_score(
+                holdout_Y_test, holdout_y_pred, average='weighted'),
         )
 
         # Cross-validation
@@ -297,7 +322,7 @@ def run_models(X, Y, RANDOM_STATE):
     svc_results_df.sort_values(by='accuracy', ascending=False).round(3)
 
     svc_param_grid = {
-        'kernel': ['linear', 'rbf', 'poly'],
+        'kernel': ['linear', 'rbf', 'sigmoid'],
         'C': [0.1, 1, 10],
         'gamma': ['scale', 0.1],
         'degree': [2, 3],
@@ -313,7 +338,8 @@ def run_models(X, Y, RANDOM_STATE):
     best_svc_results = pd.DataFrame(run_svc(best_svc))
 
     results = pd.concat(
-        [rf_results_df, mlp_results_df, svc_results_df, best_rf_results, best_mlp_results, best_svc_results],
+        [rf_results_df, mlp_results_df, svc_results_df,
+            best_rf_results, best_mlp_results, best_svc_results],
         join='inner')
     results.sort_values(by='accuracy', ascending=False).round(3)
 
