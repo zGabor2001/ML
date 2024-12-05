@@ -16,10 +16,10 @@ import dask.dataframe as dd
 import models
 
 RANDOM_STATE = 42
-BREAST_SAMPLE_SIZE = None
-LOAN_SAMPLE_SIZE = None
-PHISHING_DATA_SAMPLE = 5000
-ROAD_SAFETY_SAMPLE_SIZE = 3148
+BREAST_SAMPLE_SIZE = 10
+LOAN_SAMPLE_SIZE = 10
+PHISHING_DATA_SAMPLE = 10
+ROAD_SAFETY_SAMPLE_SIZE = 10
 PHISHING_TARGET = 'label'
 ROAD_SAFETY_TARGET = 'Casualty_Severity'
 
@@ -205,6 +205,9 @@ def prep_road_safety_data(df):
 
     df = sample_dataset(df, ROAD_SAFETY_SAMPLE_SIZE, ROAD_SAFETY_TARGET)
 
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    df[numeric_columns] = StandardScaler().fit_transform(df[numeric_columns])
+
     df: pd.DataFrame = impute_missing_values(df)
     df: pd.DataFrame = parallel_encoding(df)
     df: pd.DataFrame = optimize_data_types(df)
@@ -241,8 +244,7 @@ for key in df_dict.keys():
     elif key == 'road_safety':
         X, Y = prep_road_safety_data(df_dict[key])
     elif key == 'loan':
-        continue
-    #     X, Y = prep_loan_data(df_dict[key])
+        X, Y = prep_loan_data(df_dict[key])
     else:
         raise KeyError('Invalid dataset key')
     model_results.append(models.run_models(X, Y, 42))

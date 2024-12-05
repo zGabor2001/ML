@@ -147,9 +147,9 @@ def run_models(X, Y, RANDOM_STATE):
     rf_results_df.sort_values(by='accuracy', ascending=False).round(3)
 
     rf_param_grid = {
-        'n_estimators': [100, 150, 200, 250, 300],
-        'min_samples_split': [2, 4, 6],
-        'min_samples_leaf': [1, 2, 3],
+        'n_estimators': [100, 150],
+        'min_samples_split': [2, 4],
+        'min_samples_leaf': [1, 2],
     }
 
     best_rf = find_best_estimator(
@@ -235,7 +235,7 @@ def run_models(X, Y, RANDOM_STATE):
 
     mlp_param_grid = {
         'hidden_layer_sizes': [(50,), (100,), (200,), (100, 50), (100, 50, 25)],
-        'max_iter': [200, 300, 500],
+        'max_iter': [200],
         # Optional for activation exploration
         'activation': ['relu', 'tanh', 'logistic'],
         'solver': ['adam', 'sgd'],  # Optional for solver exploration
@@ -323,7 +323,7 @@ def run_models(X, Y, RANDOM_STATE):
 
     svc_param_grid = {
         'kernel': ['linear', 'rbf', 'sigmoid'],
-        'C': [0.1, 1, 10],
+        'C': [0.1, 1],
         'gamma': ['scale', 0.1],
         'degree': [2, 3],
         'coef0': [0.0, 0.5]
