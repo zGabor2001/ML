@@ -28,24 +28,33 @@ def timer(func):
         return result
     return wrapper
 
+
 class DecisionTree:
     def __init__(self,
-                 data: np.ndarray,
+                 array: np.ndarray,
                  max_depth: int,
                  min_samples: int,
-                 split_metric: str,
+                 task_type: str,
                  target_col_index: int):
+        self.array = array
         self.max_depth: int = max_depth
         self.min_samples: int = min_samples
-        self.split_metric: str = split_metric
+        self.task_type: str = task_type
         self.target_col_index: int = target_col_index
+        self.split_metric = None
 
-    def _is_stopping_criterion(self, data: np.ndarray, depth: int) -> bool:
+    def _get_split_metric(self):
+        if self.task_type == 'cls':
+            raise NotImplementedError("Incorrect split metric type, classification trees "
+                                      "are not implemented for this task!")
+        return 'var'
+
+    def _is_stop(self, data: np.ndarray, depth: int) -> bool:
         no_of_samples = len(data)
         if (depth >= self.max_depth or
             no_of_samples < self.min_samples or
             len(np.unique(data)) == 1 or
-            no_of_samples < self.min_samples):
+                no_of_samples < self.min_samples):
             return True
         return False
 
@@ -55,14 +64,30 @@ class DecisionTree:
     def _get_best_split(self):
         pass
 
-    def _get_new_leaf(self):
-        pass
+    def _get_new_leaf(self, y):
+        if self.split_metric == 'cls':
+            raise NotImplementedError("Incorrect task type, classification trees are not implemented for this task!")
+        return np.mean(y)
+
+    @staticmethod
+    def _calculate_variance_reduction(x: np.ndarray):
+        return 1, 1
+
+    def _best_split(self, x: np.ndarray):
+        best_threshold = 0
+        best_feature_index = 0
+        for feature in x:
+            best_feature_index, threshold = self._calculate_variance_reduction(feature)
+            if threshold > best_threshold:
+                return best_feature_index, best_threshold
+        return best_feature_index, best_threshold
 
     def _split(self):
         pass
 
     def fit(self):
-        pass
+        self.split_metric = self._get_split_metric()
+        self._is_stop(self.array, 2)
 
     def predict(self):
         pass
@@ -120,7 +145,14 @@ class RandomForest:
 
     def fit(self):
         bs_sampled, bs_not_sampled = self._bootstrap_sample()
-        dtree = DecisionTree()
+        dtree = DecisionTree(array=bs_sampled,
+                             max_depth=self.max_depth,
+                             min_samples=self.min_samples,
+                             task_type=self.task_type,
+                             target_col_index=-1
+                             )
+        dtree.fit()
+        dtree.predict()
 
     def predict(self):
         pass
