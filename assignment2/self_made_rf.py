@@ -61,16 +61,6 @@ class DecisionTree:
             return True
         return False
 
-    def _build_dec_tree(self, x: np.ndarray, y: np.ndarray, depth: int = 0):
-        best_index, best_threshold, var_reduction = self._best_split(x, y)
-        left_indices = self.x[:, best_index] <= best_threshold
-        right_indices = self.x[:, best_index] > best_threshold
-
-        left_tree = self._build_dec_tree(x[left_indices], y[left_indices], depth + 1)
-        right_tree = self._build_dec_tree(x[right_indices], y[right_indices], depth + 1)
-
-        return [left_tree, right_tree, best_index, best_threshold]
-
     def _get_new_leaf(self):
         if self.split_metric == 'cls':
             raise NotImplementedError("Incorrect task type, classification trees are not implemented for this task!")
@@ -88,7 +78,7 @@ class DecisionTree:
         left_variance = np.var(target[left_indices]) if np.sum(left_indices) > 0 else 0
         right_variance = np.var(target[right_indices]) if np.sum(right_indices) > 0 else 0
 
-        total_count = len(target)
+        total_count = target.shape
         left_weight = np.sum(left_indices) / total_count
         right_weight = np.sum(right_indices) / total_count
 
@@ -111,6 +101,16 @@ class DecisionTree:
                     best_feature_index = feature
                     best_threshold = threshold
         return best_feature_index, best_threshold, best_variance_reduction
+
+    def _build_dec_tree(self, x: np.ndarray, y: np.ndarray, depth: int = 0):
+        best_index, best_threshold, var_reduction = self._best_split(x, y)
+        left_indices = self.x[best_index] <= best_threshold
+        right_indices = self.x[best_index] > best_threshold
+
+        left_tree = self._build_dec_tree(x[left_indices], y[left_indices], depth + 1)
+        right_tree = self._build_dec_tree(x[right_indices], y[right_indices], depth + 1)
+
+        return [left_tree, right_tree, best_index, best_threshold]
 
     def _split(self):
         features = []
@@ -157,10 +157,9 @@ class RandomForest:
 
     @timer
     def _bootstrap_sample(self):
-        sampled = np.array([])
         random_sample_indexes = np.random.randint(0, len(self.data), size=self.min_samples)
-        sampled: np.ndarray = np.append(sampled, self.data[random_sample_indexes])
-        not_sampled: np.ndarray = np.setdiff1d(self.data, sampled)
+        sampled: np.ndarray = self.data[random_sample_indexes, :]
+        not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
 
     @timer
@@ -199,7 +198,11 @@ def run_self_made_random_forest(no_of_trees: int,
                                 min_samples: int,
                                 feature_subset_size: int,
                                 task_type: 'str'):
-    df = pd.DataFrame({'col': list(range(1, 16))})
+    df = pd.DataFrame({'col1': list(range(1, 16)),
+                       'col2': list(range(4, 19)),
+                       'col3': list(range(2, 17)),
+                       'col4': list(range(3, 18))
+                       })
     data = df.to_numpy()
     rf = RandomForest(data=data,
                       no_of_trees=no_of_trees,
