@@ -42,6 +42,9 @@ class DecisionTree:
         self.task_type: str = task_type
         self.target_col_index: int = target_col_index
         self.split_metric = None
+        self.x: np.ndarray = np.delete(self.array, self.target_col_index)
+        self.y: np.ndarray = self.array[self.target_col_index]
+        self.tree = None
 
     def _get_split_metric(self):
         if self.task_type == 'cls':
@@ -58,35 +61,65 @@ class DecisionTree:
             return True
         return False
 
-    def _build_dec_tree(self):
-        pass
+    def _build_dec_tree(self, x: np.ndarray, y: np.ndarray, depth: int = 0):
+        best_index, best_threshold, var_reduction = self._best_split(x, y)
+        left_indices = self.x[:, best_index] <= best_threshold
+        right_indices = self.x[:, best_index] > best_threshold
 
-    def _get_best_split(self):
-        pass
+        left_tree = self._build_dec_tree(x[left_indices], y[left_indices], depth + 1)
+        right_tree = self._build_dec_tree(x[right_indices], y[right_indices], depth + 1)
 
-    def _get_new_leaf(self, y):
+        return [left_tree, right_tree, best_index, best_threshold]
+
+    def _get_new_leaf(self):
         if self.split_metric == 'cls':
             raise NotImplementedError("Incorrect task type, classification trees are not implemented for this task!")
-        return np.mean(y)
+        return np.mean(self.y)
 
     @staticmethod
-    def _calculate_variance_reduction(x: np.ndarray):
-        return 1, 1
+    def _calculate_variance_reduction(feature: np.ndarray, target: np.ndarray, threshold: float):
+        left_indices = feature <= threshold
+        right_indices = feature > threshold
 
-    def _best_split(self, x: np.ndarray):
+        if np.sum(left_indices) == 0 or np.sum(right_indices) == 0:
+            return 0
+
+        original_variance = np.var(target)
+        left_variance = np.var(target[left_indices]) if np.sum(left_indices) > 0 else 0
+        right_variance = np.var(target[right_indices]) if np.sum(right_indices) > 0 else 0
+
+        total_count = len(target)
+        left_weight = np.sum(left_indices) / total_count
+        right_weight = np.sum(right_indices) / total_count
+
+        weighted_variance = (left_weight * left_variance) + (right_weight * right_variance)
+        variance_reduction = original_variance - weighted_variance
+
+        return variance_reduction
+
+    def _best_split(self, features: np.ndarray, target: np.ndarray):
         best_threshold = 0
         best_feature_index = 0
-        for feature in x:
-            best_feature_index, threshold = self._calculate_variance_reduction(feature)
-            if threshold > best_threshold:
-                return best_feature_index, best_threshold
-        return best_feature_index, best_threshold
+        best_variance_reduction = 0
+        for i in range(len(features)):
+            feature = features[i]
+            thresholds = np.unique(feature)
+            for threshold in thresholds:
+                variance_reduction = self._calculate_variance_reduction(feature, target, threshold)
+                if variance_reduction > best_variance_reduction:
+                    best_variance_reduction = variance_reduction
+                    best_feature_index = feature
+                    best_threshold = threshold
+        return best_feature_index, best_threshold, best_variance_reduction
 
     def _split(self):
-        pass
+        features = []
+        while len(features) < len(self.array):
+            pass
 
     def fit(self):
         self.split_metric = self._get_split_metric()
+        self.tree = self._build_dec_tree(self.x, self.y)
         self._is_stop(self.array, 2)
 
     def predict(self):
