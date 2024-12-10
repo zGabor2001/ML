@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from functools import wraps
 import time
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 
 def timer(func):
@@ -165,15 +167,6 @@ class RandomForest:
         return sampled, not_sampled
 
     @timer
-    def _bootstrap_sample_mask(self):
-        data_array_length: int = len(self.data)
-        random_indices = np.random.randint(0, data_array_length, size=self.min_samples)
-        sampled = self.data[random_indices]
-        mask = np.ones(data_array_length, dtype=bool)
-        mask[random_indices] = False
-        not_sampled = self.data[mask]
-        return sampled, not_sampled
-
     def _calculate_tree_error(self):
         errors = []
         for tree_index, tree in enumerate(self.list_of_forests):
@@ -191,6 +184,7 @@ class RandomForest:
 
         return errors
 
+    @timer
     def fit(self):
         for _ in range(self.no_of_trees):
             sampled, not_sampled = self._bootstrap_sample()
@@ -206,18 +200,21 @@ class RandomForest:
                                  target_col_index=-1)
             dtree.fit()
             self.list_of_forests.append((dtree, feature_indices))
-        #dtree.predict(self.data)
 
     def predict(self, samples: np.ndarray):
         tree_predictions = []
         for tree, feature_indices in self.list_of_forests:
             subset_samples = samples[:, feature_indices]
-            for sample in subset_samples:
-                tree_predictions.append(tree.predict(sample))
-        return np.mean(tree_predictions, axis=0)
+            tree_preds = [tree.predict(sample) for sample in subset_samples]
+            tree_predictions.append(tree_preds)
 
-    def evaluate(self, test_data: np.ndarray, test_labels: np.ndarray):
-        predictions = self.predict(test_data)
+        if self.task_type == 'reg':
+            tree_predictions = np.mean(tree_predictions, axis=0)
+
+        return tree_predictions
+
+    @staticmethod
+    def evaluate(predictions: np.ndarray, test_labels: np.ndarray):
         mse = np.mean((predictions - test_labels) ** 2)
         return np.sqrt(mse)
 
@@ -241,11 +238,27 @@ def run_self_made_random_forest(no_of_trees: int,
                                 feature_subset_size: int,
                                 task_type: 'str'):
     np.random.seed(42)
-    n_samples, n_features = 100, 5
+    n_samples, n_features = 1000, 10  # Larger dataset (1000 samples, 10 features)
     X = np.random.rand(n_samples, n_features)
-    y = 2 * X[:, 0] + 3 * X[:, 1] + np.random.rand(n_samples)
-    data = np.column_stack((X, y))
-    rf = RandomForest(data=data,
+    y = 2 * X[:, 0] + 3 * X[:, 1] + np.random.rand(n_samples)  # Simulating a regression target
+
+    y_mean = np.mean(y)  # Mean
+    y_std = np.std(y)  # Standard deviation
+    y_min = np.min(y)  # Minimum value
+    y_max = np.max(y)  # Maximum value
+    y_median = np.median(y)  # Median
+
+    print(f"Mean: {y_mean}")
+    print(f"Standard Deviation: {y_std}")
+    print(f"Minimum: {y_min}")
+    print(f"Maximum: {y_max}")
+    print(f"Median: {y_median}")
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    train_data = np.column_stack((X_train, y_train))
+
+    rf = RandomForest(data=train_data,
                       no_of_trees=no_of_trees,
                       max_depth=max_depth,
                       min_samples=min_samples,
@@ -253,14 +266,20 @@ def run_self_made_random_forest(no_of_trees: int,
                       task_type=task_type)
 
     rf.fit()
-    print(rf.list_of_forests)
-    rf.predict(data)
-    rf.evaluate(data)
+
+    x_pred_train = rf.predict(X_train)
+    x_pred_test = rf.predict(X_test)
+
+    print("\nEvaluating on training set:")
+    print("RMSE:", rf.evaluate(x_pred_train, y_train))
+
+    print("\nEvaluating on test set:")
+    print("RMSE:", rf.evaluate(x_pred_test, y_test))
 
 
 if __name__ == '__main__':
-    run_self_made_random_forest(no_of_trees=1,
-                                max_depth=5,
-                                min_samples=10,
-                                feature_subset_size=3,
+    run_self_made_random_forest(no_of_trees=100,
+                                max_depth=500,
+                                min_samples=100,
+                                feature_subset_size=9,
                                 task_type='reg')
