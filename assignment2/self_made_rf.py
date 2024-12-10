@@ -42,8 +42,8 @@ class DecisionTree:
         self.task_type: str = task_type
         self.target_col_index: int = target_col_index
         self.split_metric = None
-        self.x: np.ndarray = np.delete(self.array, self.target_col_index)
-        self.y: np.ndarray = self.array[self.target_col_index]
+        self.x = np.delete(self.array, self.target_col_index, axis=1)  # Remove the target column along axis=1
+        self.y = self.array[:, self.target_col_index]
         self.tree = None
 
     def _get_split_metric(self):
@@ -56,15 +56,14 @@ class DecisionTree:
         no_of_samples = len(data)
         if (depth >= self.max_depth or
             no_of_samples < self.min_samples or
-            len(np.unique(data)) == 1 or
-                no_of_samples < self.min_samples):
+            len(np.unique(data)) == 1):
             return True
         return False
 
-    def _get_new_leaf(self):
+    def _get_new_leaf(self, y: np.ndarray):
         if self.split_metric == 'cls':
             raise NotImplementedError("Incorrect task type, classification trees are not implemented for this task!")
-        return np.mean(self.y)
+        return np.mean(y)
 
     @staticmethod
     def _calculate_variance_reduction(feature: np.ndarray, target: np.ndarray, threshold: float):
@@ -78,7 +77,7 @@ class DecisionTree:
         left_variance = np.var(target[left_indices]) if np.sum(left_indices) > 0 else 0
         right_variance = np.var(target[right_indices]) if np.sum(right_indices) > 0 else 0
 
-        total_count = target.shape
+        total_count = target.shape[0]
         left_weight = np.sum(left_indices) / total_count
         right_weight = np.sum(right_indices) / total_count
 
@@ -91,39 +90,53 @@ class DecisionTree:
         best_threshold = 0
         best_feature_index = 0
         best_variance_reduction = 0
-        for i in range(len(features)):
-            feature = features[i]
+        for i in range(len(features[0])):
+            feature = features[:, i]
             thresholds = np.unique(feature)
             for threshold in thresholds:
                 variance_reduction = self._calculate_variance_reduction(feature, target, threshold)
                 if variance_reduction > best_variance_reduction:
                     best_variance_reduction = variance_reduction
-                    best_feature_index = feature
+                    best_feature_index = i
                     best_threshold = threshold
         return best_feature_index, best_threshold, best_variance_reduction
 
     def _build_dec_tree(self, x: np.ndarray, y: np.ndarray, depth: int = 0):
+        if self._is_stop(y, depth):
+            return self._get_new_leaf(y)
+
         best_index, best_threshold, var_reduction = self._best_split(x, y)
-        left_indices = self.x[best_index] <= best_threshold
-        right_indices = self.x[best_index] > best_threshold
+
+        if var_reduction == 0:
+            return self._get_new_leaf(y)
+
+        left_indices = x[:, best_index] <= best_threshold ### maybe self.x
+        right_indices = x[:, best_index] > best_threshold
 
         left_tree = self._build_dec_tree(x[left_indices], y[left_indices], depth + 1)
         right_tree = self._build_dec_tree(x[right_indices], y[right_indices], depth + 1)
 
         return [left_tree, right_tree, best_index, best_threshold]
 
-    def _split(self):
-        features = []
-        while len(features) < len(self.array):
-            pass
-
     def fit(self):
         self.split_metric = self._get_split_metric()
         self.tree = self._build_dec_tree(self.x, self.y)
         self._is_stop(self.array, 2)
 
-    def predict(self):
-        pass
+    @staticmethod
+    def _traverse_tree(node, sample):
+        if not isinstance(node, list):
+            return node
+
+        left_tree, right_tree, feature_index, threshold = node
+
+        if sample[feature_index] <= threshold:
+            return DecisionTree._traverse_tree(left_tree, sample)
+        else:
+            return DecisionTree._traverse_tree(right_tree, sample)
+
+    def predict(self, sample: np.ndarray):
+        return self._traverse_tree(self.tree, sample)
 
 
 class RandomForest:
@@ -141,19 +154,8 @@ class RandomForest:
         self.feature_subset_size: int = feature_subset_size
         self.task_type: str = task_type
         self.list_of_forests: list = []
-        self.unselected_samples: np.ndarray = np.ndarray([])
+        self.unselected_samples: np.ndarray = np.array([])
 
-    '''
-    def _get_np_array_from_data(self):
-        if isinstance(self.data(), np.ndarray):
-            return
-        elif isinstance(self.data(), pd.DataFrame):
-            self.data = self.data.to_numpy()
-        elif isinstance(self.data(), dict):
-            self.data = np.array(list(self.data.values()))
-        else:
-            raise TypeError(f"Incorrect type of data input, expected np.array, got {type(self.data)}")
-            '''
 
     @timer
     def _bootstrap_sample(self):
@@ -173,24 +175,64 @@ class RandomForest:
         return sampled, not_sampled
 
     def _calculate_tree_error(self):
-        pass
+        errors = []
+        for tree_index, tree in enumerate(self.list_of_forests):
+            sampled, not_sampled = self._bootstrap_sample()
+
+            oob_predictions = tree.predict_batch(not_sampled[:, :-1])
+            oob_labels = not_sampled[:, -1]
+
+            if self.task_type == 'reg':
+                mse = np.mean((oob_predictions - oob_labels) ** 2)
+                errors.append(np.sqrt(mse))
+            elif self.task_type == 'cls':
+                accuracy = np.mean(oob_predictions == oob_labels)
+                errors.append(1 - accuracy)
+
+        return errors
 
     def fit(self):
-        bs_sampled, bs_not_sampled = self._bootstrap_sample()
-        dtree = DecisionTree(array=bs_sampled,
-                             max_depth=self.max_depth,
-                             min_samples=self.min_samples,
-                             task_type=self.task_type,
-                             target_col_index=-1
-                             )
-        dtree.fit()
-        dtree.predict()
+        for _ in range(self.no_of_trees):
+            sampled, not_sampled = self._bootstrap_sample()
+            feature_indices = np.random.choice(
+                range(self.data.shape[1] - 1), self.feature_subset_size, replace=False
+            )
+            sampled_features = np.column_stack((sampled[:, feature_indices], sampled[:, -1]))
 
-    def predict(self):
-        pass
+            dtree = DecisionTree(array=sampled_features,
+                                 max_depth=self.max_depth,
+                                 min_samples=self.min_samples,
+                                 task_type=self.task_type,
+                                 target_col_index=-1)
+            dtree.fit()
+            self.list_of_forests.append((dtree, feature_indices))
+        #dtree.predict(self.data)
 
-    def evaluate(self):
-        pass
+    def predict(self, samples: np.ndarray):
+        tree_predictions = []
+        for tree, feature_indices in self.list_of_forests:
+            subset_samples = samples[:, feature_indices]
+            for sample in subset_samples:
+                tree_predictions.append(tree.predict(sample))
+        return np.mean(tree_predictions, axis=0)
+
+    def evaluate(self, test_data: np.ndarray, test_labels: np.ndarray):
+        predictions = self.predict(test_data)
+        mse = np.mean((predictions - test_labels) ** 2)
+        return np.sqrt(mse)
+
+
+'''
+def _get_np_array_from_data(self):
+    if isinstance(self.data(), np.ndarray):
+        return
+    elif isinstance(self.data(), pd.DataFrame):
+        self.data = self.data.to_numpy()
+    elif isinstance(self.data(), dict):
+        self.data = np.array(list(self.data.values()))
+    else:
+        raise TypeError(f"Incorrect type of data input, expected np.array, got {type(self.data)}")
+'''
 
 
 def run_self_made_random_forest(no_of_trees: int,
@@ -198,12 +240,11 @@ def run_self_made_random_forest(no_of_trees: int,
                                 min_samples: int,
                                 feature_subset_size: int,
                                 task_type: 'str'):
-    df = pd.DataFrame({'col1': list(range(1, 16)),
-                       'col2': list(range(4, 19)),
-                       'col3': list(range(2, 17)),
-                       'col4': list(range(3, 18))
-                       })
-    data = df.to_numpy()
+    np.random.seed(42)
+    n_samples, n_features = 100, 5
+    X = np.random.rand(n_samples, n_features)
+    y = 2 * X[:, 0] + 3 * X[:, 1] + np.random.rand(n_samples)
+    data = np.column_stack((X, y))
     rf = RandomForest(data=data,
                       no_of_trees=no_of_trees,
                       max_depth=max_depth,
@@ -213,12 +254,13 @@ def run_self_made_random_forest(no_of_trees: int,
 
     rf.fit()
     print(rf.list_of_forests)
-    rf.predict()
+    rf.predict(data)
+    rf.evaluate(data)
 
 
 if __name__ == '__main__':
     run_self_made_random_forest(no_of_trees=1,
                                 max_depth=5,
                                 min_samples=10,
-                                feature_subset_size=5,
+                                feature_subset_size=3,
                                 task_type='reg')
