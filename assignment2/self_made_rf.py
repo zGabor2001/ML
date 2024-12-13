@@ -1,9 +1,9 @@
 import numpy as np
-import pandas as pd
 from functools import wraps
 import time
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+
+from assignment2.base_random_forest import BaseRandomForest
 
 
 def timer(func):
@@ -141,7 +141,7 @@ class DecisionTree:
         return self._traverse_tree(self.tree, sample)
 
 
-class RandomForest:
+class RandomForest(BaseRandomForest):
     def __init__(self,
                  data,
                  no_of_trees: int,
@@ -149,19 +149,14 @@ class RandomForest:
                  min_samples: int,
                  feature_subset_size: int,
                  task_type: 'str'):
-        self.data = data
-        self.no_of_trees: int = no_of_trees
-        self.max_depth: int = max_depth
-        self.min_samples: int = min_samples
-        self.feature_subset_size: int = feature_subset_size
-        self.task_type: str = task_type
+        super().__init__(data, no_of_trees, max_depth, min_samples, feature_subset_size, task_type)
         self.list_of_forests: list = []
         self.unselected_samples: np.ndarray = np.array([])
 
 
     @timer
     def _bootstrap_sample(self):
-        random_sample_indexes = np.random.randint(0, len(self.data), size=self.min_samples)
+        random_sample_indexes = np.random.randint(0, len(self.data), size=len(self.data))
         sampled: np.ndarray = self.data[random_sample_indexes, :]
         not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
