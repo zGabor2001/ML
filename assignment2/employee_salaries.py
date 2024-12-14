@@ -10,7 +10,7 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest
-from assignment2.util import get_dataset_from_openml
+from assignment2.util.data_utils import load_dataset
 
 _DATASET_ID = 42125
 _DATASET_PATH = 'data/employee_salaries.csv'
@@ -21,16 +21,6 @@ _CORRELATION_DROP_THRESHOLD = 1.0
 _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
-
-
-def load_dataset(dataset_id: int, dataset_path: str) -> pd.DataFrame:
-    file_path = Path(dataset_path)
-
-    if not file_path.exists():
-        data = get_dataset_from_openml(dataset_id)
-        data.to_csv(file_path)
-
-    return pd.read_csv(file_path)
 
 
 def explore_employee_salaries_dataset():
