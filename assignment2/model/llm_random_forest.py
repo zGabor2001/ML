@@ -1,10 +1,12 @@
 import numpy as np
 from typing import List
+from sklearn.metrics import mean_squared_error
+
 from assignment2.model.base_random_forest import BaseRandomForest
 
 
 class DecisionTreeRegressor:
-    def _init_(self, max_depth: int, min_samples: int, feature_subset_size: int):
+    def __init__(self, max_depth: int, min_samples: int, feature_subset_size: int):     # __init__ was called _init_
         self.max_depth = max_depth
         self.min_samples = min_samples
         self.feature_subset_size = feature_subset_size
@@ -80,7 +82,7 @@ class DecisionTreeRegressor:
 
 class LLMRandomForestRegressor(BaseRandomForest):
 
-    def _init_(
+    def __init__(   # _init_ here too
         self,
         data: np.ndarray,
         no_of_trees: int,
@@ -91,10 +93,11 @@ class LLMRandomForestRegressor(BaseRandomForest):
     ) -> None:
         super().__init__(
             data, no_of_trees, max_depth, min_samples, feature_subset_size, task_type
-        )
+        ),  # comma was missing
         self.trees: List[DecisionTreeRegressor] = []
 
-    def _bootstrap_sample(self, data: np.ndarray) -> np.ndarray:
+    @staticmethod   # Not static by LLM
+    def _bootstrap_sample(data: np.ndarray) -> np.ndarray:
         n_samples = data.shape[0]  # Number of rows in the dataset
         bootstrap_indices = np.random.choice(n_samples, size=n_samples, replace=True)
         return data[bootstrap_indices]
@@ -114,4 +117,6 @@ class LLMRandomForestRegressor(BaseRandomForest):
 
     @staticmethod
     def evaluate(predictions: np.ndarray, test_labels: np.ndarray) -> float:
-     return "mean-square-evaluate"
+        #   LLM response: return "mean-square-evaluate" (xdd)
+        mse = mean_squared_error(test_labels, predictions)  # Calculate Mean Squared Error
+        return np.sqrt(mse)
