@@ -1,12 +1,6 @@
 import numpy as np
 from functools import wraps
 import time
-import math
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import mean_squared_error
-
-from sklearn.model_selection import train_test_split
 from joblib import Parallel, delayed
 
 from assignment2.model.base_random_forest import BaseRandomForest
@@ -149,7 +143,7 @@ class DecisionTree:
         return self._traverse_tree(self.tree, sample)
 
 
-class RandomForest(BaseRandomForest):
+class ScratchRandomForest(BaseRandomForest):
     def __init__(self,
                  data,
                  no_of_trees: int,
@@ -239,103 +233,3 @@ def _get_np_array_from_data(self):
     else:
         raise TypeError(f"Incorrect type of data input, expected np.array, got {type(self.data)}")
 '''
-
-
-def run_self_made_random_forest(no_of_trees: int,
-                                max_depth: int,
-                                min_samples: int,
-                                feature_subset_size: int,
-                                task_type: 'str'):
-
-    debug = True
-    benchmark = True
-    if debug:
-        np.random.seed(42)
-
-        n_rows = 300
-        n_features = 10
-        X = np.random.rand(n_rows, n_features) * 100  # Random values between 0 and 100
-        y = np.dot(X, np.random.rand(n_features)) + np.random.normal(0, 10, n_rows)  # Linear relationship + noise
-
-    else:
-        df_forest = pd.read_csv(r"C:\DS\repos\ML\assignment2\data\forestfires.csv")
-
-        df_forest["month"] = pd.to_datetime(df_forest["month"], format='%b').dt.month
-        df_forest["day"] = pd.to_datetime(df_forest["day"], format='%a').dt.weekday
-
-        X = df_forest.iloc[:, :-1].to_numpy()
-        y = df_forest.iloc[:, -1].to_numpy()
-
-    mean_y = np.mean(y)
-    median_y = np.median(y)
-    std_y = np.std(y)  # Standard deviation
-    min_y = np.min(y)
-    max_y = np.max(y)
-
-    # Display statistics
-    print(f"Mean: {mean_y}")
-    print(f"Median: {median_y}")
-    print(f"Standard Deviation: {std_y}")
-    print(f"Minimum: {min_y}")
-    print(f"Maximum: {max_y}")
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    train_data = np.column_stack((X_train, y_train))
-
-    rf = RandomForest(data=train_data,
-                      no_of_trees=no_of_trees,
-                      max_depth=max_depth,
-                      min_samples=min_samples,
-                      feature_subset_size=feature_subset_size,
-                      task_type=task_type)
-
-    rf.fit()
-
-    x_pred_train = rf.predict(X_train)
-    x_pred_test = rf.predict(X_test)
-
-    print("\nEvaluating on training set:")
-    print("RMSE:", math.sqrt(mean_squared_error(y_train, x_pred_train)), rf.evaluate(y_train, x_pred_train))
-
-    print("\nEvaluating on test set:")
-    print("RMSE:", math.sqrt(mean_squared_error(y_test, x_pred_test)), rf.evaluate(y_test, x_pred_test))
-
-    if benchmark:
-        param_grid = {
-            'n_estimators': [50, 100, 200],  # Number of trees
-            'max_depth': [None, 10, 20, 30],  # Maximum depth of trees
-            'min_samples_split': [2, 5, 10],  # Minimum samples to split an internal node
-            'min_samples_leaf': [1, 2, 4],  # Minimum samples per leaf node
-            'max_features': ['auto', 'sqrt', 'log2'],  # Number of features to consider
-        }
-
-        # Initialize the RandomForestRegressor
-        rf = RandomForestRegressor(random_state=42)
-
-        # Set up GridSearchCV
-        grid_search = GridSearchCV(
-            estimator=rf,
-            param_grid=param_grid,
-            scoring='neg_mean_squared_error',
-            cv=5,  # 5-fold cross-validation
-            n_jobs=-1,  # Use all processors
-            verbose=2
-        )
-
-        # Fit the model
-        grid_search.fit(X_train, y_train)
-
-        # Best parameters and evaluation
-        best_rf = grid_search.best_estimator_
-        y_pred = best_rf.predict(X_test)
-        print(f"Best Parameters: {grid_search.best_params_}")
-        print(f"Root Mean Squared Error: {math.sqrt(mean_squared_error(y_test, y_pred)):.2f}")
-
-
-if __name__ == '__main__':
-    run_self_made_random_forest(no_of_trees=100,
-                                max_depth=20,
-                                min_samples=20,
-                                feature_subset_size=4,
-                                task_type='reg')

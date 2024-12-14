@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
-    RandomForest as SelfMadeRandomForest
+    ScratchRandomForest as SelfMadeRandomForest
 from assignment2.preprocessing import periodic_spline_transformer
 
 _DATASET_PATH = 'data/forestfires.csv'
@@ -18,6 +18,7 @@ _TEST_SPLIT_SIZE = 0.2
 _OUTPUT_FOLDER = Path('output/forest_fires')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
+
 
 def load_dataset(dataset_path: str) -> pd.DataFrame:
     return pd.read_csv(dataset_path)

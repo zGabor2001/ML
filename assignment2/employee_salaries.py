@@ -9,7 +9,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
-    RandomForest as SelfMadeRandomForest
+    ScratchRandomForest as SelfMadeRandomForest
 from assignment2.util import get_dataset_from_openml
 
 _DATASET_ID = 42125
