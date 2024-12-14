@@ -10,7 +10,7 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest
-from assignment2.util.data_utils import load_dataset
+from assignment2.util.data_utils import load_dataset, get_train_test_data
 
 _DATASET_ID = 42125
 _DATASET_PATH = 'data/employee_salaries.csv'
@@ -38,9 +38,7 @@ def explore_employee_salaries_dataset():
 
     # data split into features and target variable
     # as well as into training and testing sets
-    x = df.drop(columns=[_TARGET_VARIABLE])
-    y = df[_TARGET_VARIABLE]
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=_TEST_SPLIT_SIZE)
+    x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 
     # setup larger preprocessing pipeline
     # Columns with missing values:
