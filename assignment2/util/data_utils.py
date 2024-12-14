@@ -1,5 +1,7 @@
 import openml
 import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
 
 
 def get_dataset_from_openml(dataset_id: int) -> pd.DataFrame:
@@ -16,4 +18,20 @@ def get_dataset_from_openml(dataset_id: int) -> pd.DataFrame:
     # we will perform any data splits manually, so we are only interested in the first value of the tuple
     data, _, _, _ = dataset.get_data(dataset_format='dataframe')
     return data
+
+
+def load_dataset(dataset_id: int, dataset_path: str) -> pd.DataFrame:
+    file_path = Path(dataset_path)
+
+    if not file_path.exists():
+        data = get_dataset_from_openml(dataset_id)
+        data.to_csv(file_path)
+
+    return pd.read_csv(file_path)
+
+
+def get_train_test_data(df: pd.DataFrame, target: str, split_size):
+    x = df.drop(columns=[target])
+    y = df[target]
+    return train_test_split(x, y, test_size=split_size)
 

@@ -1,6 +1,7 @@
 import numpy as np
 from functools import wraps
 import time
+import pandas as pd
 from joblib import Parallel, delayed
 
 from assignment2.model.base_random_forest import BaseRandomForest
@@ -155,13 +156,13 @@ class ScratchRandomForest(BaseRandomForest):
         self.list_of_forests: list = []
         self.unselected_samples: np.ndarray = np.array([])
 
-
     @timer
     def _bootstrap_sample(self):
         random_sample_indexes = np.random.randint(0, len(self.data), size=len(self.data))
         sampled: np.ndarray = self.data[random_sample_indexes, :]
         not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
+
     '''
     def _calculate_tree_error(self):
         errors = []
@@ -180,8 +181,21 @@ class ScratchRandomForest(BaseRandomForest):
 
         return errors
     '''
+
+    def _get_np_array_from_data(self):
+        if isinstance(self.data, np.ndarray):
+            return
+        elif isinstance(self.data, pd.DataFrame):
+            self.data = self.data.to_numpy()
+        elif isinstance(self.data, dict):
+            self.data = np.array(list(self.data.values()))
+        else:
+            raise TypeError(f"Incorrect type of data input, expected np.array, got {type(self.data)}")
+
     @timer
     def fit(self):
+
+        self._get_np_array_from_data()
 
         feature_indices_per_tree = [
             np.random.choice(range(self.data.shape[1] - 1), self.feature_subset_size, replace=False)
