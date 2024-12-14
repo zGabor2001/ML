@@ -1,12 +1,15 @@
 import numpy as np
-import pandas as pd
 from functools import wraps
 import time
 import math
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
+
+from sklearn.model_selection import train_test_split
+from joblib import Parallel, delayed
+
+from assignment2.model.base_random_forest import BaseRandomForest
 
 
 def timer(func):
@@ -23,6 +26,7 @@ def timer(func):
     This decorator can be used to wrap functions and output their execution time
     in seconds.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -31,6 +35,7 @@ def timer(func):
         duration = end_time - start_time
         print(f"{func.__name__} executed in {duration:.4f} seconds")
         return result
+
     return wrapper
 
 
@@ -60,8 +65,8 @@ class DecisionTree:
     def _is_stop(self, data: np.ndarray, depth: int) -> bool:
         no_of_samples = len(data)
         if (depth >= self.max_depth or
-            no_of_samples < self.min_samples or
-            len(np.unique(data)) == 1):
+                no_of_samples < self.min_samples or
+                len(np.unique(data)) == 1):
             return True
         return False
 
@@ -115,7 +120,7 @@ class DecisionTree:
         if var_reduction == 0:
             return self._get_new_leaf(y)
 
-        left_indices = x[:, best_index] <= best_threshold ### maybe self.x
+        left_indices = x[:, best_index] <= best_threshold  ### maybe self.x
         right_indices = x[:, best_index] > best_threshold
 
         left_tree = self._build_dec_tree(x[left_indices], y[left_indices], depth + 1)
@@ -144,7 +149,7 @@ class DecisionTree:
         return self._traverse_tree(self.tree, sample)
 
 
-class RandomForest:
+class RandomForest(BaseRandomForest):
     def __init__(self,
                  data,
                  no_of_trees: int,
@@ -152,17 +157,14 @@ class RandomForest:
                  min_samples: int,
                  feature_subset_size: int,
                  task_type: 'str'):
-        self.data = data
-        self.no_of_trees: int = no_of_trees
-        self.max_depth: int = max_depth
-        self.min_samples: int = min_samples
-        self.feature_subset_size: int = feature_subset_size
-        self.task_type: str = task_type
+        super().__init__(data, no_of_trees, max_depth, min_samples, feature_subset_size, task_type)
         self.list_of_forests: list = []
         self.unselected_samples: np.ndarray = np.array([])
 
+
+    @timer
     def _bootstrap_sample(self):
-        random_sample_indexes = np.random.randint(0, len(self.data), size=self.min_samples)
+        random_sample_indexes = np.random.randint(0, len(self.data), size=len(self.data))
         sampled: np.ndarray = self.data[random_sample_indexes, :]
         not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
@@ -186,20 +188,26 @@ class RandomForest:
     '''
     @timer
     def fit(self):
-        for _ in range(self.no_of_trees):
-            sampled, not_sampled = self._bootstrap_sample()
-            feature_indices = np.random.choice(
-                range(self.data.shape[1] - 1), self.feature_subset_size, replace=False
-            )
-            sampled_features = np.column_stack((sampled[:, feature_indices], sampled[:, -1]))
 
+        feature_indices_per_tree = [
+            np.random.choice(range(self.data.shape[1] - 1), self.feature_subset_size, replace=False)
+            for _ in range(self.no_of_trees)
+        ]
+
+        # Parallelizable function for training a single tree
+        def fit_tree(data: np.ndarray, feature_indices: list[int]):
+            random_sample_indices = np.random.randint(0, len(data), size=len(data))
+            sampled_rows = data[random_sample_indices, :]
+            sampled_features = np.column_stack((sampled_rows[:, feature_indices], sampled_rows[:, -1]))
             dtree = DecisionTree(array=sampled_features,
                                  max_depth=self.max_depth,
                                  min_samples=self.min_samples,
                                  task_type=self.task_type,
                                  target_col_index=-1)
             dtree.fit()
-            self.list_of_forests.append((dtree, feature_indices))
+            return dtree, feature_indices
+
+        self.list_of_forests = Parallel(n_jobs=-1)(delayed(fit_tree)(self.data, fi) for fi in feature_indices_per_tree)
 
     @timer
     def predict(self, samples: np.ndarray):
