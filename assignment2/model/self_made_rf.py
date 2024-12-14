@@ -234,16 +234,3 @@ class ScratchRandomForest(BaseRandomForest):
     def evaluate(predictions: np.ndarray, test_labels: np.ndarray):
         mse = np.mean((predictions - test_labels) ** 2)
         return np.sqrt(mse)
-
-
-'''
-def _get_np_array_from_data(self):
-    if isinstance(self.data(), np.ndarray):
-        return
-    elif isinstance(self.data(), pd.DataFrame):
-        self.data = self.data.to_numpy()
-    elif isinstance(self.data(), dict):
-        self.data = np.array(list(self.data.values()))
-    else:
-        raise TypeError(f"Incorrect type of data input, expected np.array, got {type(self.data)}")
-'''
