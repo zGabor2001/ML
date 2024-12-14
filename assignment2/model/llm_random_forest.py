@@ -78,7 +78,7 @@ class DecisionTreeRegressor:
         return DecisionTreeRegressor._predict_sample(sample, tree["right"])
 
 
-class RandomForestRegressor(BaseRandomForest):
+class LLMRandomForestRegressor(BaseRandomForest):
 
     def _init_(
         self,
@@ -89,10 +89,15 @@ class RandomForestRegressor(BaseRandomForest):
         feature_subset_size: int,
         task_type: str = "regression",
     ) -> None:
-        super()._init_(
+        super().__init__(
             data, no_of_trees, max_depth, min_samples, feature_subset_size, task_type
         )
         self.trees: List[DecisionTreeRegressor] = []
+
+    def _bootstrap_sample(self, data: np.ndarray) -> np.ndarray:
+        n_samples = data.shape[0]  # Number of rows in the dataset
+        bootstrap_indices = np.random.choice(n_samples, size=n_samples, replace=True)
+        return data[bootstrap_indices]
 
     def fit(self):
         for _ in range(self.no_of_trees):

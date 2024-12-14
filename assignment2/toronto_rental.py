@@ -5,6 +5,7 @@ from sklearn.compose import ColumnTransformer
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest
+from assignment2.model.llm_random_forest import LLMRandomForestRegressor
 from assignment2.util.data_utils import load_dataset, get_train_test_data
 
 _DATASET_ID = 43723
@@ -12,6 +13,7 @@ _DATASET_PATH = 'data/toronto_rental.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
+_TEST_RUN = True
 
 _OUTPUT_FOLDER = Path('output/toronto_rental')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
@@ -45,20 +47,31 @@ def explore_toronto_rental_dataset():
         feature_subset_size=[2, 3, 5],
     )
 
-    results = run_random_forest_with_varied_params(
-        model_cls=SelfMadeRandomForest,
-        x_train=x_train_transformed,
-        x_test=x_test_transformed,
-        y_train=y_train,
-        y_test=y_test,
-        hyperparameters=params,
-        n_jobs=1,
-        verbose=True
-    )
+    if _TEST_RUN:
+        params = generate_hyperparameter_permutations(
+            no_of_trees=[50],
+            max_depth=[20],
+            min_samples=[10],
+            feature_subset_size=[2],
+        )
 
-    # save results
-    _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
-    results.to_csv(_OUTPUT_HYPERPARAMETERS_RESULTS)
+    random_forests = [SelfMadeRandomForest, LLMRandomForestRegressor]
+
+    for rf in random_forests:
+        results = run_random_forest_with_varied_params(
+            model_cls=rf,
+            x_train=x_train_transformed,
+            x_test=x_test_transformed,
+            y_train=y_train,
+            y_test=y_test,
+            hyperparameters=params,
+            n_jobs=1,
+            verbose=True
+        )
+
+        # save results
+        _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
+        results.to_csv(_OUTPUT_HYPERPARAMETERS_FOLDER / f'{rf.__name__}_results')
 
 
 if __name__ == "__main__":
