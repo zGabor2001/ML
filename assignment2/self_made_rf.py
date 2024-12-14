@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 from functools import wraps
 import time
+import math
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
 
 
@@ -158,15 +161,12 @@ class RandomForest:
         self.list_of_forests: list = []
         self.unselected_samples: np.ndarray = np.array([])
 
-
-    @timer
     def _bootstrap_sample(self):
         random_sample_indexes = np.random.randint(0, len(self.data), size=self.min_samples)
         sampled: np.ndarray = self.data[random_sample_indexes, :]
         not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
-
-    @timer
+    '''
     def _calculate_tree_error(self):
         errors = []
         for tree_index, tree in enumerate(self.list_of_forests):
@@ -183,7 +183,7 @@ class RandomForest:
                 errors.append(1 - accuracy)
 
         return errors
-
+    '''
     @timer
     def fit(self):
         for _ in range(self.no_of_trees):
@@ -201,6 +201,7 @@ class RandomForest:
             dtree.fit()
             self.list_of_forests.append((dtree, feature_indices))
 
+    @timer
     def predict(self, samples: np.ndarray):
         tree_predictions = []
         for tree, feature_indices in self.list_of_forests:
@@ -237,22 +238,38 @@ def run_self_made_random_forest(no_of_trees: int,
                                 min_samples: int,
                                 feature_subset_size: int,
                                 task_type: 'str'):
-    np.random.seed(42)
-    n_samples, n_features = 1000, 10  # Larger dataset (1000 samples, 10 features)
-    X = np.random.rand(n_samples, n_features)
-    y = 2 * X[:, 0] + 3 * X[:, 1] + np.random.rand(n_samples)  # Simulating a regression target
 
-    y_mean = np.mean(y)  # Mean
-    y_std = np.std(y)  # Standard deviation
-    y_min = np.min(y)  # Minimum value
-    y_max = np.max(y)  # Maximum value
-    y_median = np.median(y)  # Median
+    debug = True
+    benchmark = True
+    if debug:
+        np.random.seed(42)
 
-    print(f"Mean: {y_mean}")
-    print(f"Standard Deviation: {y_std}")
-    print(f"Minimum: {y_min}")
-    print(f"Maximum: {y_max}")
-    print(f"Median: {y_median}")
+        n_rows = 300
+        n_features = 10
+        X = np.random.rand(n_rows, n_features) * 100  # Random values between 0 and 100
+        y = np.dot(X, np.random.rand(n_features)) + np.random.normal(0, 10, n_rows)  # Linear relationship + noise
+
+    else:
+        df_forest = pd.read_csv(r"C:\DS\repos\ML\assignment2\data\forestfires.csv")
+
+        df_forest["month"] = pd.to_datetime(df_forest["month"], format='%b').dt.month
+        df_forest["day"] = pd.to_datetime(df_forest["day"], format='%a').dt.weekday
+
+        X = df_forest.iloc[:, :-1].to_numpy()
+        y = df_forest.iloc[:, -1].to_numpy()
+
+    mean_y = np.mean(y)
+    median_y = np.median(y)
+    std_y = np.std(y)  # Standard deviation
+    min_y = np.min(y)
+    max_y = np.max(y)
+
+    # Display statistics
+    print(f"Mean: {mean_y}")
+    print(f"Median: {median_y}")
+    print(f"Standard Deviation: {std_y}")
+    print(f"Minimum: {min_y}")
+    print(f"Maximum: {max_y}")
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -271,15 +288,46 @@ def run_self_made_random_forest(no_of_trees: int,
     x_pred_test = rf.predict(X_test)
 
     print("\nEvaluating on training set:")
-    print("RMSE:", rf.evaluate(x_pred_train, y_train))
+    print("RMSE:", math.sqrt(mean_squared_error(y_train, x_pred_train)), rf.evaluate(y_train, x_pred_train))
 
     print("\nEvaluating on test set:")
-    print("RMSE:", rf.evaluate(x_pred_test, y_test))
+    print("RMSE:", math.sqrt(mean_squared_error(y_test, x_pred_test)), rf.evaluate(y_test, x_pred_test))
+
+    if benchmark:
+        param_grid = {
+            'n_estimators': [50, 100, 200],  # Number of trees
+            'max_depth': [None, 10, 20, 30],  # Maximum depth of trees
+            'min_samples_split': [2, 5, 10],  # Minimum samples to split an internal node
+            'min_samples_leaf': [1, 2, 4],  # Minimum samples per leaf node
+            'max_features': ['auto', 'sqrt', 'log2'],  # Number of features to consider
+        }
+
+        # Initialize the RandomForestRegressor
+        rf = RandomForestRegressor(random_state=42)
+
+        # Set up GridSearchCV
+        grid_search = GridSearchCV(
+            estimator=rf,
+            param_grid=param_grid,
+            scoring='neg_mean_squared_error',
+            cv=5,  # 5-fold cross-validation
+            n_jobs=-1,  # Use all processors
+            verbose=2
+        )
+
+        # Fit the model
+        grid_search.fit(X_train, y_train)
+
+        # Best parameters and evaluation
+        best_rf = grid_search.best_estimator_
+        y_pred = best_rf.predict(X_test)
+        print(f"Best Parameters: {grid_search.best_params_}")
+        print(f"Root Mean Squared Error: {math.sqrt(mean_squared_error(y_test, y_pred)):.2f}")
 
 
 if __name__ == '__main__':
     run_self_made_random_forest(no_of_trees=100,
-                                max_depth=500,
-                                min_samples=100,
-                                feature_subset_size=9,
+                                max_depth=20,
+                                min_samples=20,
+                                feature_subset_size=4,
                                 task_type='reg')
