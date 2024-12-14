@@ -1,10 +1,11 @@
 import numpy as np
 from functools import wraps
 import time
+
 from sklearn.model_selection import train_test_split
 from joblib import Parallel, delayed
 
-from assignment2.base_random_forest import BaseRandomForest
+from assignment2.model.base_random_forest import BaseRandomForest
 
 
 def timer(func):
