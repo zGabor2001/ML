@@ -18,7 +18,7 @@ _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
 
-_OUTPUT_FOLDER = 'output/employee_salaries'
+_OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 
@@ -50,7 +50,7 @@ def explore_employee_salaries_dataset():
     # as well as into training and testing sets
     x = df.drop(columns=[_TARGET_VARIABLE])
     y = df[_TARGET_VARIABLE]
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=_TEST_SPLIT_SIZE, stratify=_TARGET_VARIABLE)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=_TEST_SPLIT_SIZE)
 
     # setup larger preprocessing pipeline
     # Columns with missing values:
@@ -84,7 +84,8 @@ def explore_employee_salaries_dataset():
             ('median_imputed', SimpleImputer(strategy='median'), ['2016_gross_pay_received', '2016_overtime_pay']),
             ('ordinal_encoded', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1),
              ['department', 'department_name', 'division', 'assignment_category', 'employee_position_title'])],
-            remainder='passthrough'
+            remainder='passthrough',
+            verbose_feature_names_out=False
         )),
     ])
 
@@ -110,7 +111,6 @@ def explore_employee_salaries_dataset():
         n_jobs=1,
         verbose=True
     )
-
     # save results
     _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
     results.to_csv(_OUTPUT_HYPERPARAMETERS_RESULTS)
