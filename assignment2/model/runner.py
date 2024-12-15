@@ -105,7 +105,7 @@ def run_random_forest_with_varied_params(
         hyperparameters: list[RFHyperparameters],
         verbose: bool = False,
         n_runs: int = 1,
-        n_jobs: int = -1
+        n_jobs: int = 1
 ) -> pd.DataFrame:
     """
     Fit and evaluate a random forest model with different hyperparameters
