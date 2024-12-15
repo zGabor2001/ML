@@ -129,8 +129,8 @@ def run_random_forest_with_varied_params(
     return pd.DataFrame(results)
 
 
-def train_all_random_forests_on_data(random_forests: Type[BaseRandomForest],
-                                     params: RFHyperparameters | dict,
+def train_all_random_forests_on_data(random_forests: list[Type[BaseRandomForest]],
+                                     params: list[RFHyperparameters | dict],
                                      x_train_transformed: np.ndarray,
                                      x_test_transformed: np.ndarray,
                                      y_train: np.ndarray,

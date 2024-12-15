@@ -6,11 +6,10 @@ from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 
-from assignment2.model import generate_hyperparameter_permutations, ScratchRandomForest as SelfMadeRandomForest
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest, generate_knn_hyperparameter_permutations
 from assignment2.model.llm_random_forest import LLMRandomForestRegressor
-from assignment2.util.data_utils import load_dataset, get_train_test_data, timer
+from assignment2.util.data_utils import timer
 from assignment2.model.runner import train_all_random_forests_on_data
 
 from assignment2.model.runner import run_sklearn_model_with_varied_params
