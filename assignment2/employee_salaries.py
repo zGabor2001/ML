@@ -111,14 +111,6 @@ def explore_employee_salaries_dataset():
             feature_subset_size=[4, 9, 14],
         )
 
-    if _TEST_RUN:
-        params = generate_hyperparameter_permutations(
-            no_of_trees=[50],
-            max_depth=[20],
-            min_samples=[10],
-            feature_subset_size=[2],
-        )
-
     train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
                                      params=params,
                                      x_train_transformed=x_train_transformed,
