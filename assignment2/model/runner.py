@@ -114,7 +114,7 @@ def run_sklearn_model(
         y_test: np.ndarray | pd.DataFrame,
         verbose: bool = False) -> dict[str, any]:
     if verbose:
-        print(f"Running with parameters: {parameters}")
+        print(f"Running model {model_cls.__name__} with parameters: {parameters}")
 
     x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
     model = model_cls(**parameters)
@@ -123,7 +123,7 @@ def run_sklearn_model(
     rmse = get_rmse(predictions, y_test)
 
     if verbose:
-        print(f"Run complete with parameters {parameters}.\nRMSE: {rmse}")
+        print(f"Run complete for model {model_cls.__name__} with parameters {parameters}.\nRMSE: {rmse}")
 
     return parameters | { 'RMSE': rmse }
 
