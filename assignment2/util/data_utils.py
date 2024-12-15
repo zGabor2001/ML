@@ -63,10 +63,11 @@ def timer(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         duration = end_time - start_time
-        print(f"{func.__name__} executed in {duration:.4f} seconds")
+        print(f"{func.__name__} executed in {duration:.4f} seconds\n")
         return result
 
     return wrapper
+
 
 def get_rmse(y_pred, y_true):
     return np.sqrt(mean_squared_error(y_true, y_pred))
