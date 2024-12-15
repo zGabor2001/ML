@@ -1,2 +1,2 @@
-,trees,max_depth,min_samples,feature_subset_size,RMSE,R_squared
-0,50,20,10,4,6314.929565509723,0.9530439463728952
+,trees,max_depth,min_samples,feature_subset_size,RMSE,Std. Dev.,R_squared
+0,50,20,10,4,5324.86480679436,29770.77429966984,0.96800832999496
