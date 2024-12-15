@@ -26,6 +26,8 @@ _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
+_TEST_RUN=True
+
 def explore_employee_salaries_dataset():
     # Pandas DataFrame output for sklearn transformers
     set_config(transform_output='pandas')
@@ -85,12 +87,20 @@ def explore_employee_salaries_dataset():
     x_test_transformed = preprocessing_pipeline.transform(x_test)
 
     # run model with permutation of different hyperparameters
-    params = generate_hyperparameter_permutations(
-        no_of_trees=[50, 100, 200],
-        max_depth=[20, 50, 500],
-        min_samples=[10, 100, 200],
-        feature_subset_size=[4, 9, 14],
-    )
+    if _TEST_RUN:
+        params = generate_hyperparameter_permutations(
+            no_of_trees=[50],
+            max_depth=[20],
+            min_samples=[10],
+            feature_subset_size=[4],
+        )
+    else:
+        params = generate_hyperparameter_permutations(
+            no_of_trees=[50, 100, 200],
+            max_depth=[20, 50, 500],
+            min_samples=[10, 100, 200],
+            feature_subset_size=[4, 9, 14],
+        )
 
     results = run_random_forest_with_varied_params(
         model_cls=SelfMadeRandomForest,
@@ -125,11 +135,18 @@ def explore_employee_salaries_dataset():
     x_train_transformed_knn = preprocessing_pipeline_knn.fit_transform(x_train)
     x_test_transformed_knn = preprocessing_pipeline_knn.transform(x_test)
 
-    knn_params = generate_knn_hyperparameter_permutations(
-        n_neighbors=[5, 10, 20],
-        weights=['uniform', 'distance'],
-        leaf_size=[10, 30, 50]
-    )
+    if _TEST_RUN:
+        knn_params = generate_knn_hyperparameter_permutations(
+            n_neighbors=[5],
+            weights=['uniform'],
+            leaf_size=[10]
+        )
+    else:
+        knn_params = generate_knn_hyperparameter_permutations(
+            n_neighbors=[5, 10, 20],
+            weights=['uniform', 'distance'],
+            leaf_size=[10, 30, 50]
+        )
 
     knn_results = run_sklearn_model_with_varied_params(
         model_cls=KNeighborsRegressor,
