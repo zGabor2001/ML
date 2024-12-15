@@ -3,17 +3,17 @@ from pathlib import Path
 import pandas as pd
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
 
 from assignment2.model import generate_hyperparameter_permutations, ScratchRandomForest as SelfMadeRandomForest, \
     generate_knn_hyperparameter_permutations
-from assignment2.model.runner import run_sklearn_model_with_varied_params
 from assignment2.model.llm_random_forest import LLMRandomForestRegressor
+from assignment2.model.runner import run_sklearn_model_with_varied_params
 from assignment2.model.runner import train_all_random_forests_on_data
 from assignment2.util.data_utils import load_dataset, get_train_test_data, timer
 
@@ -34,11 +34,7 @@ _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
 
-@timer
-def explore_employee_salaries_dataset():
-    # Pandas DataFrame output for sklearn transformers
-    set_config(transform_output='pandas')
-
+def prepare_employee_salaries_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     # split date_first_hired into year, month, day
@@ -90,33 +86,8 @@ def explore_employee_salaries_dataset():
     ])
 
     # preprocess training and testing data (prevent data leakage by preprocessing them separately)
-    x_train_transformed = preprocessing_pipeline.fit_transform(x_train)
-    x_test_transformed = preprocessing_pipeline.transform(x_test)
-
-    # run model with permutation of different hyperparameters
-    if _TEST_RUN:
-        params = generate_hyperparameter_permutations(
-            no_of_trees=[50],
-            max_depth=[20],
-            min_samples=[10],
-            feature_subset_size=[4],
-        )
-    else:
-        params = generate_hyperparameter_permutations(
-            no_of_trees=[50, 70, 100],
-            max_depth=[20, 50, 100],
-            min_samples=[10, 100, 200],
-            feature_subset_size=[4, 9, 14],
-        )
-
-    train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
-                                     params=params,
-                                     x_train_transformed=x_train_transformed,
-                                     x_test_transformed=x_test_transformed,
-                                     y_train=y_train,
-                                     y_test=y_test,
-                                     output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
-
+    x_train_transformed_rf = preprocessing_pipeline.fit_transform(x_train)
+    x_test_transformed_rf = preprocessing_pipeline.transform(x_test)
 
     # knn - unlike regression trees - requires scaling
     # hence we need a separate preprocessing pipeline
@@ -136,19 +107,54 @@ def explore_employee_salaries_dataset():
 
     x_train_transformed_knn = preprocessing_pipeline_knn.fit_transform(x_train)
     x_test_transformed_knn = preprocessing_pipeline_knn.transform(x_test)
+    return x_train_transformed_rf, x_test_transformed_rf, x_train_transformed_knn, x_test_transformed_knn, y_train, y_test
 
+
+@timer
+def explore_employee_salaries_dataset():
+    # Pandas DataFrame output for sklearn transformers
+    set_config(transform_output='pandas')
+
+    # run model with permutation of different hyperparameters
     if _TEST_RUN:
+        rf_params = generate_hyperparameter_permutations(
+            no_of_trees=[50],
+            max_depth=[20],
+            min_samples=[10],
+            feature_subset_size=[4],
+        )
         knn_params = generate_knn_hyperparameter_permutations(
             n_neighbors=[5],
             weights=['uniform'],
             leaf_size=[10]
         )
     else:
+        rf_params = generate_hyperparameter_permutations(
+            no_of_trees=[50, 70, 100],
+            max_depth=[20, 50, 100],
+            min_samples=[10, 100, 200],
+            feature_subset_size=[4, 9, 14],
+        )
         knn_params = generate_knn_hyperparameter_permutations(
             n_neighbors=[5, 10, 20],
             weights=['uniform', 'distance'],
             leaf_size=[10, 30, 50]
         )
+
+    (x_train_transformed_rf,
+     x_test_transformed_rf,
+     x_train_transformed_knn,
+     x_test_transformed_knn,
+     y_train,
+     y_test) = prepare_employee_salaries_dataset()
+
+    train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
+                                     params=rf_params,
+                                     x_train_transformed=x_train_transformed_rf,
+                                     x_test_transformed=x_test_transformed_rf,
+                                     y_train=y_train,
+                                     y_test=y_test,
+                                     output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
 
     knn_results = run_sklearn_model_with_varied_params(
         model_cls=KNeighborsRegressor,
