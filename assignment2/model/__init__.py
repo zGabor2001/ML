@@ -1,4 +1,4 @@
 from .self_made_rf import ScratchRandomForest
 from .base_random_forest import BaseRandomForest
-from .parameters import RFHyperparameters, generate_hyperparameter_permutations
+from .parameters import RFHyperparameters, generate_hyperparameter_permutations, generate_knn_hyperparameter_permutations
 from .runner import run_random_forest, run_random_forest_with_varied_params

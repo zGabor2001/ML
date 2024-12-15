@@ -1,6 +1,9 @@
+import numpy as np
 import openml
 import pandas as pd
 from pathlib import Path
+
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
 
@@ -35,3 +38,10 @@ def get_train_test_data(df: pd.DataFrame, target: str, split_size):
     y = df[target]
     return train_test_split(x, y, test_size=split_size)
 
+
+def get_rmse(y_pred, y_true):
+    return np.sqrt(mean_squared_error(y_true, y_pred))
+
+
+def convert_to_numpy(*args: pd.DataFrame | np.ndarray) -> tuple[np.ndarray, ...]:
+    return tuple(arg.to_numpy() if isinstance(arg, pd.DataFrame) else arg for arg in args)
