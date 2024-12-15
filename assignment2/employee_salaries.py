@@ -22,7 +22,7 @@ _DATASET_PATH = 'data/employee_salaries.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
+_TEST_RUN = False
 _RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
                                        SelfMadeRandomForest, LLMRandomForestRegressor]
 
@@ -32,8 +32,6 @@ _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 
 _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
-
-_TEST_RUN = True
 
 
 @timer

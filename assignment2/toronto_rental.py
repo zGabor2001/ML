@@ -20,7 +20,7 @@ _DATASET_PATH = 'data/toronto_rental.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
+_TEST_RUN = False
 _RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
                                        SelfMadeRandomForest, LLMRandomForestRegressor]
 
