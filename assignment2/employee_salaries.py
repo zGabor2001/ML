@@ -4,25 +4,31 @@ import pandas as pd
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from sklearn.ensemble import RandomForestRegressor
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest
-from assignment2.util.data_utils import load_dataset, get_train_test_data
+from assignment2.model.llm_random_forest import LLMRandomForestRegressor
+from assignment2.model.runner import train_all_random_forests_on_data
+from assignment2.util.data_utils import load_dataset, get_train_test_data, timer
 
 _DATASET_ID = 42125
 _DATASET_PATH = 'data/employee_salaries.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
+_TEST_RUN = True
+_RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
+                                       SelfMadeRandomForest, LLMRandomForestRegressor]
 
 _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 
 
+@timer
 def explore_employee_salaries_dataset():
     # Pandas DataFrame output for sklearn transformers
     set_config(transform_output='pandas')
@@ -89,6 +95,23 @@ def explore_employee_salaries_dataset():
         feature_subset_size=[4, 9, 14],
     )
 
+    if _TEST_RUN:
+        params = generate_hyperparameter_permutations(
+            no_of_trees=[50],
+            max_depth=[20],
+            min_samples=[10],
+            feature_subset_size=[2],
+        )
+
+    train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
+                                     params=params,
+                                     x_train_transformed=x_train_transformed,
+                                     x_test_transformed=x_test_transformed,
+                                     y_train=y_train,
+                                     y_test=y_test,
+                                     output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
+
+    '''
     results = run_random_forest_with_varied_params(
         model_cls=SelfMadeRandomForest,
         x_train=x_train_transformed,
@@ -102,7 +125,7 @@ def explore_employee_salaries_dataset():
     # save results
     _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
     results.to_csv(_OUTPUT_HYPERPARAMETERS_RESULTS)
-
+'''
 
 if __name__ == '__main__':
     explore_employee_salaries_dataset()
