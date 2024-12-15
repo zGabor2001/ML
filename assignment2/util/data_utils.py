@@ -29,6 +29,7 @@ def load_dataset(dataset_id: int, dataset_path: str) -> pd.DataFrame:
     file_path = Path(dataset_path)
 
     if not file_path.exists():
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         data = get_dataset_from_openml(dataset_id)
         data.to_csv(file_path)
 
