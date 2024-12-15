@@ -70,23 +70,6 @@ def explore_toronto_rental_dataset():
             feature_subset_size=[2],
         )
 
-    random_forests = [SelfMadeRandomForest, LLMRandomForestRegressor]
-
-    for rf in random_forests:
-        results = run_random_forest_with_varied_params(
-            model_cls=rf,
-            x_train=x_train_transformed,
-            x_test=x_test_transformed,
-            y_train=y_train,
-            y_test=y_test,
-            hyperparameters=params,
-            n_jobs=1,
-            verbose=True
-        )
-
-    # save results
-    _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
-    results.to_csv(_OUTPUT_HYPERPARAMETERS_FOLDER / f'{rf.__name__}_results')
     train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
                                      params=params,
                                      x_train_transformed=x_train_transformed,
