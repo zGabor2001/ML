@@ -42,8 +42,6 @@ def run_random_forest(
     y_train = y_train.to_numpy() if isinstance(y_train, pd.DataFrame) else y_train
     y_test = y_test.to_numpy() if isinstance(y_test, pd.DataFrame) else y_test
 
-    std_dev_test = np.std(y_test)
-
     if model_cls == RandomForestRegressor:
         model = model_cls(
             n_estimators=parameters['n_estimators'],
@@ -56,18 +54,16 @@ def run_random_forest(
         rmse = get_rmse(predictions, y_test)
         r_squared = r2_score(y_test, predictions)
         if verbose:
-            print(f"{model_cls} run complete with parameters {parameters}.")
-            print(f"\nRMSE: {rmse}, Std. Dev.: {std_dev_test}, R^2: {r_squared}")
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}, R^2: {r_squared}")
 
         return {
-            'trees': parameters['n_estimators'],
-            'max_depth': parameters['max_depth'],
-            'min_samples': parameters['min_samples_split'],
-            'feature_subset_size': parameters['max_features'],
-            'RMSE': rmse,
-            'Std. Dev.': std_dev_test,
-            'R_squared': r_squared
-        }
+                'trees': parameters['n_estimators'],
+                'max_depth': parameters['max_depth'],
+                'min_samples': parameters['min_samples_split'],
+                'feature_subset_size': parameters['max_features'],
+                'RMSE': rmse,
+                'R_squared': r_squared
+            }
 
     else:
         model = model_cls(
@@ -83,16 +79,14 @@ def run_random_forest(
         rmse = get_rmse(predictions, y_test)
         r_squared = r2_score(y_test, predictions)
         if verbose:
-            print(f"{model_cls} run complete with parameters {parameters}. \nRMSE: {rmse}, , Std. Dev.: {std_dev_test}, R^2: {r_squared}")
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}, R^2: {r_squared}")
 
         return {
             'trees': parameters.no_of_trees,
             'max_depth': parameters.max_depth,
             'min_samples': parameters.min_samples,
             'feature_subset_size': parameters.feature_subset_size,
-            'RMSE': rmse,
-            'Std. Dev.': std_dev_test,
-            'R_squared': r_squared
+            'RMSE': rmse
         }
 
 
@@ -185,20 +179,18 @@ def run_sklearn_model(
     if verbose:
         print(f"Running model {model_cls.__name__} with parameters: {parameters}")
 
-    x_train, x_test, y_train, y_test = convert_to_numpy(
-        x_train, x_test, y_train, y_test)
+    x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
     model = model_cls(**parameters)
     model.fit(x_train, y_train)
     predictions = model.predict(x_test)
     rmse = get_rmse(predictions, y_test)
     r_squared = r2_score(y_test, predictions)
-    std_dev_test = np.std(y_test)
 
     if verbose:
         print(f"Run complete for model {model_cls.__name__} with parameters {parameters}."
-              f"\nRMSE: {rmse}, Std. Dev.: {std_dev_test}, R Squared: {r_squared}\n")
+              f"\nRMSE: {rmse} R Squared: {r_squared}\n")
 
-    return parameters | {'RMSE': rmse, 'Std. Dev.': {std_dev_test}, 'R-Squared': r_squared}
+    return parameters | {'RMSE': rmse, 'R-Squared': r_squared}
 
 
 def run_sklearn_model_with_varied_params(
