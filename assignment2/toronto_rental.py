@@ -10,7 +10,6 @@ from assignment2.model import generate_hyperparameter_permutations, run_random_f
     ScratchRandomForest as SelfMadeRandomForest, generate_knn_hyperparameter_permutations
 from assignment2.model.llm_random_forest import LLMRandomForestRegressor
 from assignment2.util.data_utils import timer
-from assignment2.model.runner import train_all_random_forests_on_data
 
 from assignment2.model.runner import run_sklearn_model_with_varied_params
 from assignment2.util.data_utils import load_dataset, get_train_test_data
@@ -20,7 +19,7 @@ _DATASET_PATH = 'data/toronto_rental.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
+_TEST_RUN = False
 _RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
                                        SelfMadeRandomForest, LLMRandomForestRegressor]
 
@@ -70,13 +69,13 @@ def explore_toronto_rental_dataset():
             feature_subset_size=[2],
         )
 
-    train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
-                                     params=params,
-                                     x_train_transformed=x_train_transformed,
-                                     x_test_transformed=x_test_transformed,
-                                     y_train=y_train,
-                                     y_test=y_test,
-                                     output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
+    # train_all_random_forests_on_data(random_forests=_RANDOM_FOREST_CLASSES_FOR_TRAINING,
+    #                                  params=params,
+    #                                  x_train_transformed=x_train_transformed,
+    #                                  x_test_transformed=x_test_transformed,
+    #                                  y_train=y_train,
+    #                                  y_test=y_test,
+    #                                  output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
 
     # knn - unlike regression trees - requires scaling
     # hence we need a separate preprocessing pipeline
@@ -111,7 +110,8 @@ def explore_toronto_rental_dataset():
         y_train=y_train,
         y_test=y_test,
         hyperparameters=knn_params,
-        verbose=True
+        verbose=True,
+
     )
 
     # save knn results
