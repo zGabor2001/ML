@@ -1,7 +1,10 @@
+import numpy as np
 import openml
 import pandas as pd
 import time
 from pathlib import Path
+
+from sklearn.metrics import mean_squared_error
 from functools import wraps
 from sklearn.model_selection import train_test_split
 
@@ -26,6 +29,7 @@ def load_dataset(dataset_id: int, dataset_path: str) -> pd.DataFrame:
     file_path = Path(dataset_path)
 
     if not file_path.exists():
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         data = get_dataset_from_openml(dataset_id)
         data.to_csv(file_path)
 
@@ -63,3 +67,10 @@ def timer(func):
         return result
 
     return wrapper
+
+def get_rmse(y_pred, y_true):
+    return np.sqrt(mean_squared_error(y_true, y_pred))
+
+
+def convert_to_numpy(*args: pd.DataFrame | np.ndarray) -> tuple[np.ndarray, ...]:
+    return tuple(arg.to_numpy() if isinstance(arg, pd.DataFrame) else arg for arg in args)

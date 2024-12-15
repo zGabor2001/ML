@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 
 from .base_random_forest import BaseRandomForest
 from .parameters import RFHyperparameters
+from assignment2.util import get_rmse, convert_to_numpy
 
 
 def run_random_forest(
@@ -128,8 +129,8 @@ def run_random_forest_with_varied_params(
     return pd.DataFrame(results)
 
 
-def train_all_random_forests_on_data(random_forests: Type[BaseRandomForest],
-                                     params: RFHyperparameters | dict,
+def train_all_random_forests_on_data(random_forests: list[Type[BaseRandomForest]],
+                                     params: list[RFHyperparameters | dict],
                                      x_train_transformed: np.ndarray,
                                      x_test_transformed: np.ndarray,
                                      y_train: np.ndarray,
@@ -163,3 +164,52 @@ def train_all_random_forests_on_data(random_forests: Type[BaseRandomForest],
         results.to_csv(output_folder /
                        f'{rf.__name__}_results')
 
+
+
+
+def run_sklearn_model(
+        model_cls: Type,
+        parameters: dict[str, any],
+        x_train: np.ndarray | pd.DataFrame,
+        x_test: np.ndarray | pd.DataFrame,
+        y_train: np.ndarray | pd.DataFrame,
+        y_test: np.ndarray | pd.DataFrame,
+        verbose: bool = False) -> dict[str, any]:
+    if verbose:
+        print(f"Running model {model_cls.__name__} with parameters: {parameters}")
+
+    x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
+    model = model_cls(**parameters)
+    model.fit(x_train, y_train)
+    predictions = model.predict(x_test)
+    rmse = get_rmse(predictions, y_test)
+
+    if verbose:
+        print(f"Run complete for model {model_cls.__name__} with parameters {parameters}.\nRMSE: {rmse}")
+
+    return parameters | { 'RMSE': rmse }
+
+
+def run_sklearn_model_with_varied_params(
+        model_cls: Type,
+        x_train: np.ndarray | pd.DataFrame,
+        x_test: np.ndarray | pd.DataFrame,
+        y_train: np.ndarray | pd.DataFrame,
+        y_test: np.ndarray | pd.DataFrame,
+        hyperparameters: list[dict[str, any]],
+        verbose: bool = False,
+        n_runs: int = 1,
+        n_jobs: int = -1
+) -> pd.DataFrame:
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(run_sklearn_model)(
+            model_cls=model_cls,
+            parameters=parameters,
+            x_train=x_train,
+            x_test=x_test,
+            y_train=y_train,
+            y_test=y_test,
+            verbose=verbose
+        ) for parameters in hyperparameters for _ in range(n_runs)
+    )
+    return pd.DataFrame(results)
