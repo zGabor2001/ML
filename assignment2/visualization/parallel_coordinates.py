@@ -11,7 +11,8 @@ def plot_parallel_coordinates(
         target_col: str,
         dataset_name: str,
         regressor_name: str,
-        working_dir: str | PathLike,
+        working_dir: Optional[str | PathLike] = None,
+        output_file: Optional[str | PathLike] = None,
         dimensions: Optional[list[str]] = None,
         filter_target_range_fraction: float = 1.0
 ) -> None:
@@ -23,7 +24,8 @@ def plot_parallel_coordinates(
         target_col (str): The target column for coloring the plot.
         dataset_name (str): The name of the dataset.
         regressor_name (str): The name of the regressor.
-        working_dir (Union[str, Path]): The directory to save the plot.
+        working_dir (str | PathLike, optional): The working directory to save the plot. Defaults to None. Either the output_file or working_dir must be provided.
+        output_file (str | PathLike, optional): The output file to save the plot. Defaults to None. Either the output_file or working_dir must be provided.
         dimensions (list[str], optional): The dimensions to plot. Defaults to the columns of the dataframe.
         filter_target_range_fraction (float, optional): The fraction of the target column to filter. Defaults to 1.0.
     """
@@ -67,9 +69,18 @@ def plot_parallel_coordinates(
             dim['tickvals'] = list(mapping.keys())
             dim['ticktext'] = list(mapping.values())
 
-    working_dir_path = Path(working_dir)
-    working_dir_path.mkdir(parents=True, exist_ok=True)
-    fig.write_image(working_dir_path / 'parallel_coordinates_plot.png')
+    # determine output file
+    if output_file is not None:
+        output_file_path = Path(output_file)
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
+    elif working_dir is not None:
+        working_dir_path = Path(working_dir)
+        working_dir_path.mkdir(parents=True, exist_ok=True)
+        output_file = working_dir_path / f'{dataset_name}_{regressor_name}_parallel_coordinates_plot.png'
+    else:
+        raise ValueError('Either the output_file or working_dir must be provided.')
+
+    fig.write_image(output_file)
 
 
 if __name__ == "__main__":
