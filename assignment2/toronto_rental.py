@@ -2,6 +2,7 @@ from pathlib import Path
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
     ScratchRandomForest as SelfMadeRandomForest
@@ -23,11 +24,14 @@ _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 def explore_toronto_rental_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
     df = df.iloc[:, 1:]
-    df['Price'] = df['Price'].str.replace(',', '').astype(float)    # Is this a good idea???
-    x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
+    df['Price'] = df['Price'].str.replace(
+        ',', '').astype(float)    # Is this a good idea???
+    x_train, x_test, y_train, y_test = get_train_test_data(
+        df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 
     address_preprocessing_pipeline = Pipeline([
-        ('ordinal_encoded', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1))
+        ('ordinal_encoded', OrdinalEncoder(
+            handle_unknown='use_encoded_value', unknown_value=-1))
     ])
 
     preprocessing_pipeline = Pipeline([
@@ -55,23 +59,36 @@ def explore_toronto_rental_dataset():
             feature_subset_size=[2],
         )
 
-    random_forests = [SelfMadeRandomForest, LLMRandomForestRegressor]
+    random_forests = [RandomForestRegressor,
+                      SelfMadeRandomForest, LLMRandomForestRegressor]
 
     for rf in random_forests:
+        if rf == RandomForestRegressor:
+            rf_params = [
+                {
+                    'n_estimators': p['no_of_trees'],
+                    'max_depth': p['max_depth'],
+                    'min_samples_split': p['min_samples'],
+                    'max_features': p['feature_subset_size']
+                } for p in params
+            ]
+        else:
+            rf_params = params
         results = run_random_forest_with_varied_params(
             model_cls=rf,
             x_train=x_train_transformed,
             x_test=x_test_transformed,
             y_train=y_train,
             y_test=y_test,
-            hyperparameters=params,
+            hyperparameters=rf_params,
             n_jobs=1,
             verbose=True
         )
 
         # save results
         _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
-        results.to_csv(_OUTPUT_HYPERPARAMETERS_FOLDER / f'{rf.__name__}_results')
+        results.to_csv(_OUTPUT_HYPERPARAMETERS_FOLDER /
+                       f'{rf.__name__}_results')
 
 
 if __name__ == "__main__":
