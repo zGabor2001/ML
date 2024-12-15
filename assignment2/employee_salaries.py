@@ -105,8 +105,8 @@ def explore_employee_salaries_dataset():
         )
     else:
         params = generate_hyperparameter_permutations(
-            no_of_trees=[50, 100, 200],
-            max_depth=[20, 50, 500],
+            no_of_trees=[50, 70, 100],
+            max_depth=[20, 50, 100],
             min_samples=[10, 100, 200],
             feature_subset_size=[4, 9, 14],
         )
@@ -119,22 +119,6 @@ def explore_employee_salaries_dataset():
                                      y_test=y_test,
                                      output_folder=_OUTPUT_HYPERPARAMETERS_FOLDER)
 
-    '''
-    results = run_random_forest_with_varied_params(
-        model_cls=SelfMadeRandomForest,
-        x_train=x_train_transformed,
-        x_test=x_test_transformed,
-        y_train=y_train,
-        y_test=y_test,
-        hyperparameters=params,
-        n_jobs=1,
-        verbose=True
-    )
-    
-    # save results
-    _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
-    results.to_csv(_OUTPUT_HYPERPARAMETERS_RESULTS)
-    '''
 
     # knn - unlike regression trees - requires scaling
     # hence we need a separate preprocessing pipeline

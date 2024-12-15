@@ -5,7 +5,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 from pathlib import Path
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 from .base_random_forest import BaseRandomForest
 from .parameters import RFHyperparameters
@@ -51,17 +51,19 @@ def run_random_forest(
         )
         model.fit(x_train, y_train)
         predictions = model.predict(x_test)
-        rmse = np.sqrt(mean_squared_error(y_test, predictions))
+        rmse = get_rmse(predictions, y_test)
+        r_squared = r2_score(y_test, predictions)
         if verbose:
-            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}")
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}, R^2: {r_squared}")
 
         return {
-            'trees': parameters['n_estimators'],
-            'max_depth': parameters['max_depth'],
-            'min_samples': parameters['min_samples_split'],
-            'feature_subset_size': parameters['max_features'],
-            'RMSE': rmse
-        }
+                'trees': parameters['n_estimators'],
+                'max_depth': parameters['max_depth'],
+                'min_samples': parameters['min_samples_split'],
+                'feature_subset_size': parameters['max_features'],
+                'RMSE': rmse,
+                'R_squared': r_squared
+            }
 
     else:
         model = model_cls(
@@ -74,9 +76,10 @@ def run_random_forest(
         )
         model.fit()
         predictions = model.predict(x_test)
-        rmse = model.evaluate(predictions, y_test)
+        rmse = get_rmse(predictions, y_test)
+        r_squared = r2_score(y_test, predictions)
         if verbose:
-            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}")
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}, R^2: {r_squared}")
 
         return {
             'trees': parameters.no_of_trees,
@@ -165,8 +168,6 @@ def train_all_random_forests_on_data(random_forests: list[Type[BaseRandomForest]
                        f'{rf.__name__}_results')
 
 
-
-
 def run_sklearn_model(
         model_cls: Type,
         parameters: dict[str, any],
@@ -183,11 +184,13 @@ def run_sklearn_model(
     model.fit(x_train, y_train)
     predictions = model.predict(x_test)
     rmse = get_rmse(predictions, y_test)
+    r_squared = r2_score(y_test, predictions)
 
     if verbose:
-        print(f"Run complete for model {model_cls.__name__} with parameters {parameters}.\nRMSE: {rmse}")
+        print(f"Run complete for model {model_cls.__name__} with parameters {parameters}."
+              f"\nRMSE: {rmse} R Squared: {r_squared}\n")
 
-    return parameters | { 'RMSE': rmse }
+    return parameters | {'RMSE': rmse, 'R-Squared': r_squared}
 
 
 def run_sklearn_model_with_varied_params(
