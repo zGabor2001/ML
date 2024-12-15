@@ -3,6 +3,9 @@ from typing import Type
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
+from pathlib import Path
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
 
 from .base_random_forest import BaseRandomForest
 from .parameters import RFHyperparameters
@@ -39,27 +42,49 @@ def run_random_forest(
     y_train = y_train.to_numpy() if isinstance(y_train, pd.DataFrame) else y_train
     y_test = y_test.to_numpy() if isinstance(y_test, pd.DataFrame) else y_test
 
-    model = model_cls(
-        data=np.column_stack((x_train, y_train)),
-        no_of_trees=parameters.no_of_trees,
-        max_depth=parameters.max_depth,
-        min_samples=parameters.min_samples,
-        feature_subset_size=parameters.feature_subset_size,
-        task_type=parameters.task_type
-    )
-    model.fit()
-    predictions = model.predict(x_test)
-    rmse = model.evaluate(predictions, y_test)
-    if verbose:
-        print(f"Run complete with parameters {parameters}.\nRMSE: {rmse}")
+    if model_cls == RandomForestRegressor:
+        model = model_cls(
+            n_estimators=parameters['n_estimators'],
+            max_depth=parameters['max_depth'],
+            min_samples_split=parameters['min_samples_split'],
+            max_features=parameters['max_features'],
+        )
+        model.fit(x_train, y_train)
+        predictions = model.predict(x_test)
+        rmse = np.sqrt(mean_squared_error(y_test, predictions))
+        if verbose:
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}")
 
-    return {
-        'trees': parameters.no_of_trees,
-        'max_depth': parameters.max_depth,
-        'min_samples': parameters.min_samples,
-        'feature_subset_size': parameters.feature_subset_size,
-        'RMSE': rmse
-    }
+        return {
+            'trees': parameters['n_estimators'],
+            'max_depth': parameters['max_depth'],
+            'min_samples': parameters['min_samples_split'],
+            'feature_subset_size': parameters['max_features'],
+            'RMSE': rmse
+        }
+
+    else:
+        model = model_cls(
+            data=np.column_stack((x_train, y_train)),
+            no_of_trees=parameters.no_of_trees,
+            max_depth=parameters.max_depth,
+            min_samples=parameters.min_samples,
+            feature_subset_size=parameters.feature_subset_size,
+            task_type=parameters.task_type
+        )
+        model.fit()
+        predictions = model.predict(x_test)
+        rmse = model.evaluate(predictions, y_test)
+        if verbose:
+            print(f"{model_cls} run complete with parameters {parameters}.\nRMSE: {rmse}")
+
+        return {
+            'trees': parameters.no_of_trees,
+            'max_depth': parameters.max_depth,
+            'min_samples': parameters.min_samples,
+            'feature_subset_size': parameters.feature_subset_size,
+            'RMSE': rmse
+        }
 
 
 def run_random_forest_with_varied_params(
@@ -102,6 +127,43 @@ def run_random_forest_with_varied_params(
         ) for parameters in hyperparameters for _ in range(n_runs)
     )
     return pd.DataFrame(results)
+
+
+def train_all_random_forests_on_data(random_forests: Type[BaseRandomForest],
+                                     params: RFHyperparameters | dict,
+                                     x_train_transformed: np.ndarray,
+                                     x_test_transformed: np.ndarray,
+                                     y_train: np.ndarray,
+                                     y_test: np.ndarray,
+                                     output_folder: Path):
+    for rf in random_forests:
+        if rf == RandomForestRegressor:
+            rf_params = [
+                {
+                    'n_estimators': p.no_of_trees,
+                    'max_depth': p.max_depth,
+                    'min_samples_split': p.min_samples,
+                    'max_features': p.feature_subset_size
+                } for p in params
+            ]
+        else:
+            rf_params = params
+        results = run_random_forest_with_varied_params(
+            model_cls=rf,
+            x_train=x_train_transformed,
+            x_test=x_test_transformed,
+            y_train=y_train,
+            y_test=y_test,
+            hyperparameters=rf_params,
+            n_jobs=1,
+            verbose=True
+        )
+
+        # save results
+        output_folder.mkdir(parents=True, exist_ok=True)
+        results.to_csv(output_folder /
+                       f'{rf.__name__}_results')
+
 
 
 

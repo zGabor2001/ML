@@ -1,37 +1,9 @@
 import numpy as np
-from functools import wraps
-import time
 import pandas as pd
 from joblib import Parallel, delayed
 
 from assignment2.model.base_random_forest import BaseRandomForest
-
-
-def timer(func):
-    """
-    A decorator to measure and print the execution time of a function.
-
-    Args:
-    - func (function): The function to be wrapped by the timer decorator.
-
-    Returns:
-    - wrapper (function): A wrapped function that calculates and prints the time
-                           taken to execute the original function.
-
-    This decorator can be used to wrap functions and output their execution time
-    in seconds.
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        duration = end_time - start_time
-        print(f"{func.__name__} executed in {duration:.4f} seconds")
-        return result
-
-    return wrapper
+from assignment2.util.data_utils import timer
 
 
 class DecisionTree:
@@ -156,31 +128,11 @@ class ScratchRandomForest(BaseRandomForest):
         self.list_of_forests: list = []
         self.unselected_samples: np.ndarray = np.array([])
 
-    @timer
     def _bootstrap_sample(self):
         random_sample_indexes = np.random.randint(0, len(self.data), size=len(self.data))
         sampled: np.ndarray = self.data[random_sample_indexes, :]
         not_sampled: np.ndarray = self.data[np.setdiff1d(np.arange(len(self.data)), random_sample_indexes), :]
         return sampled, not_sampled
-
-    '''
-    def _calculate_tree_error(self):
-        errors = []
-        for tree_index, tree in enumerate(self.list_of_forests):
-            sampled, not_sampled = self._bootstrap_sample()
-
-            oob_predictions = tree.predict_batch(not_sampled[:, :-1])
-            oob_labels = not_sampled[:, -1]
-
-            if self.task_type == 'reg':
-                mse = np.mean((oob_predictions - oob_labels) ** 2)
-                errors.append(np.sqrt(mse))
-            elif self.task_type == 'cls':
-                accuracy = np.mean(oob_predictions == oob_labels)
-                errors.append(1 - accuracy)
-
-        return errors
-    '''
 
     def _get_np_array_from_data(self):
         if isinstance(self.data, np.ndarray):

@@ -1,9 +1,11 @@
 import numpy as np
 import openml
 import pandas as pd
+import time
 from pathlib import Path
 
 from sklearn.metrics import mean_squared_error
+from functools import wraps
 from sklearn.model_selection import train_test_split
 
 
@@ -38,6 +40,32 @@ def get_train_test_data(df: pd.DataFrame, target: str, split_size):
     y = df[target]
     return train_test_split(x, y, test_size=split_size)
 
+
+def timer(func):
+    """
+    A decorator to measure and print the execution time of a function.
+
+    Args:
+    - func (function): The function to be wrapped by the timer decorator.
+
+    Returns:
+    - wrapper (function): A wrapped function that calculates and prints the time
+                           taken to execute the original function.
+
+    This decorator can be used to wrap functions and output their execution time
+    in seconds.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"{func.__name__} executed in {duration:.4f} seconds")
+        return result
+
+    return wrapper
 
 def get_rmse(y_pred, y_true):
     return np.sqrt(mean_squared_error(y_true, y_pred))
