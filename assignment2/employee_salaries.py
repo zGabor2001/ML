@@ -4,12 +4,13 @@ import pandas as pd
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 
 from assignment2.model import generate_hyperparameter_permutations, run_random_forest_with_varied_params, \
-    ScratchRandomForest as SelfMadeRandomForest
+    ScratchRandomForest as SelfMadeRandomForest, generate_knn_hyperparameter_permutations
+from assignment2.model.runner import run_sklearn_model_with_varied_params
 from assignment2.util.data_utils import load_dataset, get_train_test_data
 
 _DATASET_ID = 42125
@@ -22,6 +23,8 @@ _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 
+_OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
+_OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
 def explore_employee_salaries_dataset():
     # Pandas DataFrame output for sklearn transformers
@@ -103,6 +106,44 @@ def explore_employee_salaries_dataset():
     _OUTPUT_HYPERPARAMETERS_FOLDER.mkdir(parents=True, exist_ok=True)
     results.to_csv(_OUTPUT_HYPERPARAMETERS_RESULTS)
 
+    # knn - unlike regression trees - requires scaling
+    # hence we need a separate preprocessing pipeline
+    preprocessing_pipeline_knn = Pipeline([
+        ('column transformations', ColumnTransformer([
+            ('gender', gender_preprocessing_pipeline, ['gender']),
+            ('job', job_title_preprocessing_pipeline, ['underfilled_job_title']),
+            # Other transformations
+            ('median_imputed', SimpleImputer(strategy='median'), ['2016_gross_pay_received', '2016_overtime_pay']),
+            ('ordinal_encoded', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1),
+             ['department', 'department_name', 'division', 'assignment_category', 'employee_position_title'])],
+            remainder='passthrough',
+            verbose_feature_names_out=False
+        )),
+        ('scaling', StandardScaler())
+    ])
+
+    x_train_transformed_knn = preprocessing_pipeline_knn.fit_transform(x_train)
+    x_test_transformed_knn = preprocessing_pipeline_knn.transform(x_test)
+
+    knn_params = generate_knn_hyperparameter_permutations(
+        n_neighbors=[5, 10, 20],
+        weights=['uniform', 'distance'],
+        leaf_size=[10, 30, 50]
+    )
+
+    knn_results = run_sklearn_model_with_varied_params(
+        model_cls=KNeighborsRegressor,
+        x_train=x_train_transformed_knn,
+        x_test=x_test_transformed_knn,
+        y_train=y_train,
+        y_test=y_test,
+        hyperparameters=knn_params,
+        n_jobs=1,
+        verbose=True
+    )
+
+    _OUTPUT_KNN.mkdir(parents=True, exist_ok=True)
+    knn_results.to_csv(_OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS)
 
 if __name__ == '__main__':
     explore_employee_salaries_dataset()
