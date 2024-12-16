@@ -198,7 +198,7 @@ def run_sklearn_model(
         print(f"Run complete for model {model_cls.__name__} with parameters {parameters}."
               f"\nRMSE: {rmse}, Std. Dev.: {std_dev_test}, R Squared: {r_squared}\n")
 
-    return parameters | {'RMSE': rmse, 'Std. Dev.': {std_dev_test}, 'R-Squared': r_squared}
+    return parameters | {'RMSE': rmse, 'Std. Dev.': std_dev_test, 'R-Squared': r_squared}
 
 
 def run_sklearn_model_with_varied_params(
