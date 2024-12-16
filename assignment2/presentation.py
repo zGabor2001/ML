@@ -11,6 +11,7 @@ from assignment2.model.llm_random_forest import LLMRandomForestRegressor
 from assignment2.model.runner import run_sklearn_model_with_varied_params
 from assignment2.toronto_rental import prepare_toronto_rental_dataset
 from assignment2.visualization import plot_parallel_coordinates
+from assignment2.visualization.boxplots import plot_boxplot
 from assignment2.visualization.dataframe_to_image import plot_dataframe
 
 _OUTPUT = '../output'
@@ -52,6 +53,32 @@ def create_parallel_coordinates_plot(df: pd.DataFrame, dataset_name: str, regres
                               output_file=filename.with_suffix('.png'))
     plot_parallel_coordinates(modified_df, 'RMSE', dataset_name, regressor_name,
                               output_file=filename_zoomed.with_suffix('.png'), filter_target_range_fraction=0.15)
+
+def create_boxplots(
+        df_rf_scratch: pd.DataFrame,
+        df_rf_llm: pd.DataFrame,
+        df_rf_sklearn: pd.DataFrame,
+        df_knn: pd.DataFrame,
+        dataset_name: str,
+        output_folder: Path,
+        y: str
+):
+    """
+    Creates boxplots for the given dataframes.
+    """
+    df_knn_copy = df_knn.copy()
+    df_knn_copy['regressor'] = 'KNN'
+    df_rf_scratch_copy = df_rf_scratch.copy()
+    df_rf_scratch_copy['regressor'] = 'RF Scratch'
+    df_rf_llm_copy = df_rf_llm.copy()
+    df_rf_llm_copy['regressor'] = 'RF LLM'
+    df_rf_sklearn_copy = df_rf_sklearn.copy()
+    df_rf_sklearn_copy['regressor'] = 'RF Sklearn'
+
+    df_rf = pd.concat([df_rf_scratch_copy, df_rf_llm_copy, df_rf_sklearn_copy])
+    df_all = pd.concat([df_knn_copy, df_rf])
+    plot_boxplot(df_rf, 'regressor', y, f'{dataset_name}: {y}', output_folder / f'boxplot_{y}_RF.png')
+    plot_boxplot(df_all, 'regressor', y, f'Top 10 {y} results', output_folder / f'boxplot_{y}_all.png')
 
 
 def read_csv(path: str | PathLike) -> pd.DataFrame:
@@ -222,6 +249,11 @@ def main():
             best_rf_sklearn,
             best_knn
         )
+
+        # create boxplots
+        create_boxplots(df_random_forest_scratch, df_random_forest_llm, df_random_forest_sklearn, df_knn, dataset_name, folder, 'RMSE')
+        create_boxplots(df_random_forest_scratch, df_random_forest_llm, df_random_forest_sklearn, df_knn, dataset_name, folder, 'R_squared')
+
 
 
 if __name__ == '__main__':
