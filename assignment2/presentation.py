@@ -194,7 +194,7 @@ def rerun_models_with_best_hyperparameters(
     return results_rf_scratch, results_rf_llm, results_rf_sklearn, results_knn
 
 
-def main():
+def create_presentation():
     # create parallel coordinates plots
     dataset_folders = [
         (Path(_OUTPUT) / _DATASET_EMPLOYEE_SALARIES, _DATASET_EMPLOYEE_SALARIES),
@@ -257,4 +257,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    create_presentation()
