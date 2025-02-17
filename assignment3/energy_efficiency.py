@@ -38,6 +38,6 @@ def prepare_energy_efficiency_dataset():
     x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 
     
-    return y_train, y_test
+    return x_train, x_test, y_train, y_test
 
 prepare_energy_efficiency_dataset()
