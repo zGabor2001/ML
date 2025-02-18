@@ -5,12 +5,15 @@ from assignment3.cars import prepare_cars_dataset
 from assignment3.model.run_training import run_training_on_preprocessed_dataset
 
 if __name__ == "__main__":
-    # x_train_toronto, x_test_toronto, y_train_toronto, y_test_toronto = prepare_toronto_rental_dataset()
-    x_train_salaries, x_test_salaries, y_train_salaries, y_test_salaries = prepare_employee_salaries_dataset()
-    # x_train_energy, x_test_energy, y_train_energy, y_test_energy = prepare_energy_efficiency_dataset()
-    # x_train_cars, x_test_cars, y_train_cars, y_test_cars = prepare_cars_dataset()
-    run_training_on_preprocessed_dataset(x_train=x_train_salaries,
-                                         y_train=y_train_salaries,
-                                         x_test=x_test_salaries,
-                                         y_test=y_test_salaries)
+    train_test_data_map: dict = {
+        'toronto_rental': list(prepare_toronto_rental_dataset()),
+        'employee_salaries': list(prepare_employee_salaries_dataset()),
+        'energy_efficiency': list(prepare_energy_efficiency_dataset()),
+        'cars': list(prepare_cars_dataset())
+    }
+    for dataset in train_test_data_map.values():
+        run_training_on_preprocessed_dataset(x_train=dataset[0],
+                                             x_test=dataset[1],
+                                             y_train=dataset[2],
+                                             y_test=dataset[3])
 

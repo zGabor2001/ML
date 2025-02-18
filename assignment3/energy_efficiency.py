@@ -22,7 +22,7 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 def prepare_energy_efficiency_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
-    
+    df = df.iloc[:100, :]
 
     # data split into features and target variable
     # as well as into training and testing sets

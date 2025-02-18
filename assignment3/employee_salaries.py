@@ -30,7 +30,7 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 
 def prepare_employee_salaries_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
-
+    df = df.iloc[:100, :]
     # split date_first_hired into year, month, day
     date_first_hired = pd.to_datetime(df['date_first_hired'])
     df['year_first_hired'] = date_first_hired.dt.year

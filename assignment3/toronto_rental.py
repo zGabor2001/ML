@@ -28,9 +28,10 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 
 def prepare_toronto_rental_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
+    df = df.iloc[:100, :]
     df = df.iloc[:, 1:]
     df['Price'] = df['Price'].str.replace(
-        ',', '').astype(float)    # Is this a good idea???
+        ',', '').astype(float)
     x_train, x_test, y_train, y_test = get_train_test_data(
         df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 

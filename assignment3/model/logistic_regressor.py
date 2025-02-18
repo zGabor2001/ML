@@ -11,7 +11,12 @@ class LogisticRegressor(BaseRegressor):
         super(LogisticRegressor, self).__init__(device)
         self.model = nn.Linear(input_dim, 1).to(device)
 
-    def train(self, X_train, y_train, epochs=100, batch_size=32, lr=0.001):
+    def train(self,
+              X_train: np.ndarray,
+              y_train: np.ndarray,
+              epochs: int = 100,
+              batch_size: int = 32,
+              lr: float = 0.001):
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
         X_train = torch.tensor(X_train, dtype=torch.float32).to(self.device)
@@ -28,14 +33,14 @@ class LogisticRegressor(BaseRegressor):
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}")
 
-    def predict(self, X_test):
+    def predict(self, X_test: np.ndarray):
         self.model.eval()
         X_test = torch.tensor(X_test, dtype=torch.float32).to(self.device)
         with torch.no_grad():
             predictions = self.model(X_test)
         return predictions.cpu().numpy()
 
-    def evaluate(self, X_test, y_test):
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray):
         predictions = self.predict(X_test)
-        mse = np.mean((predictions - y_test) ** 2)
+        mse = np.mean((predictions - y_test.to_numpy()) ** 2)
         print(f"Mean Squared Error: {mse:.4f}")

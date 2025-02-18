@@ -26,7 +26,7 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 def prepare_cars_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
-
+    df = df.iloc[:100, :]
 
     X = df.drop(columns=[_TARGET_VARIABLE])
 
