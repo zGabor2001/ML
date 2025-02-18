@@ -31,7 +31,7 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 def prepare_cars_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
-    
+
 
     X = df.drop(columns=[_TARGET_VARIABLE])
 
@@ -61,5 +61,3 @@ def prepare_cars_dataset():
     x_train = pipeline.fit_transform(x_train)
     x_test = pipeline.transform(x_test)
     return x_train, x_test, y_train, y_test
-
-prepare_cars_dataset()

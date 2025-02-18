@@ -39,5 +39,3 @@ def prepare_energy_efficiency_dataset():
 
     
     return x_train, x_test, y_train, y_test
-
-prepare_energy_efficiency_dataset()

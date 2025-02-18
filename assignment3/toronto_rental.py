@@ -29,6 +29,7 @@ _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
+
 def prepare_toronto_rental_dataset():
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
     df = df.iloc[:, 1:]
@@ -51,17 +52,4 @@ def prepare_toronto_rental_dataset():
     x_train_transformed_rf = preprocessing_pipeline.fit_transform(x_train)
     x_test_transformed_rf = preprocessing_pipeline.transform(x_test)
 
-
-    # knn - unlike regression trees - requires scaling
-    # hence we need a separate preprocessing pipeline
-    preprocessing_pipeline_knn = Pipeline([
-        ('column transformations', ColumnTransformer([
-            ('address', address_preprocessing_pipeline, ['Address'])
-        ], remainder='passthrough', verbose_feature_names_out=False)),
-        ('scaling', StandardScaler())
-    ])
-
-    x_train_transformed_knn = preprocessing_pipeline_knn.fit_transform(x_train)
-    x_test_transformed_knn = preprocessing_pipeline_knn.transform(x_test)
-
-    return x_train_transformed_rf, x_test_transformed_rf, x_train_transformed_knn, x_test_transformed_knn, y_train, y_test
+    return x_train_transformed_rf, x_test_transformed_rf, y_train, y_test
