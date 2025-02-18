@@ -1,16 +1,11 @@
 from pathlib import Path
 
-import pandas as pd
-from sklearn import set_config
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.impute import SimpleImputer
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-from util.data_utils import load_dataset, get_train_test_data, timer
+from assignment3.util.data_utils import load_dataset, get_train_test_data, timer
 
 _DATASET_ID = 44994
 _DATASET_PATH = 'data/cars.csv'

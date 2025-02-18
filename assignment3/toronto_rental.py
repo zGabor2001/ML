@@ -1,16 +1,12 @@
 from pathlib import Path
 
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OrdinalEncoder, StandardScaler
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 
-from assignment2.model import generate_hyperparameter_permutations, ScratchRandomForest as SelfMadeRandomForest, generate_knn_hyperparameter_permutations
+from assignment2.model import ScratchRandomForest as SelfMadeRandomForest
 from assignment2.model.llm_random_forest import LLMRandomForestRegressor
-from assignment2.util.data_utils import timer
-
-from assignment2.model.runner import run_sklearn_model_with_varied_params, train_all_random_forests_on_data
 from assignment2.util.data_utils import load_dataset, get_train_test_data
 
 _DATASET_ID = 43723
@@ -49,7 +45,7 @@ def prepare_toronto_rental_dataset():
         ], remainder='passthrough', verbose_feature_names_out=False))
     ])
 
-    x_train_transformed_rf = preprocessing_pipeline.fit_transform(x_train)
-    x_test_transformed_rf = preprocessing_pipeline.transform(x_test)
+    x_train = preprocessing_pipeline.fit_transform(x_train)
+    x_test = preprocessing_pipeline.transform(x_test)
 
-    return x_train_transformed_rf, x_test_transformed_rf, y_train, y_test
+    return x_train, x_test, y_train, y_test
