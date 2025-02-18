@@ -6,7 +6,7 @@ from assignment3.model.fnn_regressor import FNNRegressor
 
 
 def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
-    logistic = LogisticRegressor()
+    logistic = LogisticRegressor(input_dim=x_train.shape[1])
     logistic.train(X_train=x_train,
                    y_train=y_train,
                    epochs=1,

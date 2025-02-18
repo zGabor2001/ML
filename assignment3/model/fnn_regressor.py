@@ -7,7 +7,7 @@ from assignment3.model.base_model import BaseRegressor
 
 
 class FNNRegressor(BaseRegressor):
-    def __init__(self, input_dim=3, device=None):
+    def __init__(self, input_dim, device=None):
         super(FNNRegressor, self).__init__(device)
         self.model = nn.Sequential(
             nn.Linear(input_dim, 256),
