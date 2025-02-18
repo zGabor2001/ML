@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
 
 from base_model import BaseRegressor
 
 
-# PyTorch-based Logistic Regressor
 class LogisticRegressor(BaseRegressor):
     def __init__(self, input_dim=3, device=None):
         super(LogisticRegressor, self).__init__(device)
