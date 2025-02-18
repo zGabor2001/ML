@@ -1,9 +1,9 @@
-from base_model import BaseRegressor
 import xgboost as xgb
 import numpy as np
 
+from assignment3.model.base_model import BaseRegressor
 
-# XGBoost Regressor
+
 class XGBoostRegressor(BaseRegressor):
     def __init__(self, device='cpu'):
         super(XGBoostRegressor, self).__init__(device)

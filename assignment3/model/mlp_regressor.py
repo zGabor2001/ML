@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
-from base_model import BaseRegressor
+from assignment3.model.base_model import BaseRegressor
 
 
 class MLPRegressor(BaseRegressor):

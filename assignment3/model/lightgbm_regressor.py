@@ -1,6 +1,6 @@
-from base_model import BaseRegressor
 import lightgbm as lgb
 import numpy as np
+from assignment3.model.base_model import BaseRegressor
 
 
 class LightGBMRegressor(BaseRegressor):
