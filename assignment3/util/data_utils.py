@@ -73,5 +73,5 @@ def get_rmse(y_pred, y_true):
     return np.sqrt(mean_squared_error(y_true, y_pred))
 
 
-def convert_to_numpy(*args: pd.DataFrame | np.ndarray) -> tuple[np.ndarray, ...]:
+def convert_to_numpy(*args: pd.DataFrame | np.ndarray | pd.Series) -> tuple[np.ndarray, ...]:
     return tuple(arg.to_numpy() if isinstance(arg, pd.DataFrame) else arg for arg in args)

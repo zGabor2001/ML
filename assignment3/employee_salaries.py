@@ -10,14 +10,14 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
 from assignment2.model import ScratchRandomForest as SelfMadeRandomForest
 from assignment2.model.llm_random_forest import LLMRandomForestRegressor
-from assignment2.util.data_utils import load_dataset, get_train_test_data, timer
+from assignment2.util.data_utils import load_dataset, get_train_test_data, timer, convert_to_numpy
 
 _DATASET_ID = 42125
 _DATASET_PATH = 'data/employee_salaries.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = False
+_TEST_RUN = True
 _RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
                                        SelfMadeRandomForest, LLMRandomForestRegressor]
 
@@ -25,10 +25,8 @@ _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
 _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 
-_OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
-_OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
-
+@timer
 def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
     df = df.iloc[:100, :]
@@ -39,8 +37,6 @@ def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndar
     df['day_first_hired'] = date_first_hired.dt.day
     df.drop(columns=['date_first_hired', 'full_name'], inplace=True)
 
-    # data split into features and target variable
-    # as well as into training and testing sets
     x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 
     # setup larger preprocessing pipeline
@@ -82,5 +78,7 @@ def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndar
 
     x_train = preprocessing_pipeline.fit_transform(x_train)
     x_test = preprocessing_pipeline.transform(x_test)
+
+    convert_to_numpy(x_train, x_test, y_train, y_test)
 
     return x_train, x_test, y_train, y_test
