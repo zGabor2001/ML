@@ -1,6 +1,7 @@
 from pathlib import Path
-
+from typing import Tuple
 import pandas as pd
+import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
@@ -28,7 +29,7 @@ _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
 
-def prepare_employee_salaries_dataset():
+def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
     df = df.iloc[:100, :]
     # split date_first_hired into year, month, day

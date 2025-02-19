@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import pandas as pd
 
 from assignment3.model.base_model import BaseRegressor
 
@@ -17,6 +18,10 @@ class LogisticRegressor(BaseRegressor):
               epochs: int = 100,
               batch_size: int = 32,
               lr: float = 0.001):
+        if isinstance(X_train, pd.DataFrame) or isinstance(X_train, pd.Series):
+            X_train = X_train.to_numpy()
+        if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
+            y_train = y_train.to_numpy()
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
         X_train = torch.tensor(X_train, dtype=torch.float32).to(self.device)

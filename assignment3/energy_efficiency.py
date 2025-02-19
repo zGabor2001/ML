@@ -19,7 +19,7 @@ _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
 
-def prepare_energy_efficiency_dataset():
+def prepare_energy_efficiency_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     df = df.iloc[:100, :]

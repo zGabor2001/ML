@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Tuple
 
+import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
@@ -23,24 +25,20 @@ _OUTPUT_KNN = _OUTPUT_FOLDER / 'knn'
 _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.csv'
 
 
-def prepare_cars_dataset():
+def prepare_cars_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     df = df.iloc[:100, :]
 
     X = df.drop(columns=[_TARGET_VARIABLE])
 
-    # Identify numerical and categorical columns
     numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns
     categorical_cols = X.select_dtypes(include=['object', 'bool']).columns
 
-    # Preprocessing for numerical data
     numerical_transformer = StandardScaler()
 
-    # Preprocessing for categorical data
     categorical_transformer = OneHotEncoder(handle_unknown='ignore')
-    
-    
+
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', numerical_transformer, numerical_cols),

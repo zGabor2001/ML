@@ -4,6 +4,36 @@ from assignment3.model.xgboost_regressor import XGBoostRegressor
 from assignment3.model.mlp_regressor import MLPRegressor
 from assignment3.model.fnn_regressor import FNNRegressor
 
+from assignment3.toronto_rental import prepare_toronto_rental_dataset
+from assignment3.energy_efficiency import prepare_energy_efficiency_dataset
+from assignment3.employee_salaries import prepare_employee_salaries_dataset
+from assignment3.cars import prepare_cars_dataset
+
+
+def get_datasets():
+    return {
+        'toronto_rental': prepare_toronto_rental_dataset,
+        'employee_salaries': prepare_employee_salaries_dataset,
+        'energy_efficiency': prepare_energy_efficiency_dataset,
+        'cars': prepare_cars_dataset
+    }
+
+
+def train_on_all_datasets():
+    datasets = get_datasets()
+
+    for name, dataset_func in datasets.items():
+        print(f"\nTraining on dataset: {name}")
+
+        x_train, x_test, y_train, y_test = dataset_func()
+
+        run_training_on_preprocessed_dataset(
+            x_train=x_train,
+            x_test=x_test,
+            y_train=y_train,
+            y_test=y_test
+        )
+
 
 def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
     logistic = LogisticRegressor(input_dim=x_train.shape[1])
