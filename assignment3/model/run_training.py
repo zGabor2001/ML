@@ -12,10 +12,10 @@ from assignment3.cars import prepare_cars_dataset
 
 def get_datasets():
     return {
-        # 'toronto_rental': prepare_toronto_rental_dataset,
-        # 'employee_salaries': prepare_employee_salaries_dataset,
+        'toronto_rental': prepare_toronto_rental_dataset,
+        'employee_salaries': prepare_employee_salaries_dataset,
         'energy_efficiency': prepare_energy_efficiency_dataset,
-        # 'cars': prepare_cars_dataset
+        'cars': prepare_cars_dataset
     }
 
 
@@ -45,4 +45,6 @@ def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
                    batch_size=32,
                    lr=0.001)
     log_predictions = logistic.predict(x_test)
-    logistic.evaluate(log_predictions, y_test)
+    logistic.evaluate(predictions=log_predictions, y_test=y_test)
+
+    xgboost = XGBoostRegressor()

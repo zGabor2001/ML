@@ -1,7 +1,7 @@
 import xgboost as xgb
-import numpy as np
 
 from assignment3.model.base_model import BaseRegressor
+from assignment3.util.data_utils import get_rmse
 
 
 class XGBoostRegressor(BaseRegressor):
@@ -19,11 +19,10 @@ class XGBoostRegressor(BaseRegressor):
         }
         self.model = xgb.train(params, dtrain, num_boost_round=num_boost_round)
 
-    def predict(self, X_test):
+    def predict(self, X_test: np.ndarray):
         dtest = xgb.DMatrix(X_test)
         return self.model.predict(dtest)
 
-    def evaluate(self, X_test, y_test):
-        predictions = self.predict(X_test)
-        mse = np.mean((predictions - y_test) ** 2)
-        print(f"Mean Squared Error: {mse:.4f}")
+    def evaluate(self, predictions: np.ndarray, y_test):
+        rmse = get_rmse()
+        print(f"Mean Squared Error: {rmse:.4f}")

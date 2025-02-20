@@ -4,11 +4,8 @@ import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
 
-from assignment2.model import ScratchRandomForest as SelfMadeRandomForest
-from assignment2.model.llm_random_forest import LLMRandomForestRegressor
-from assignment2.util.data_utils import load_dataset, get_train_test_data, timer, convert_to_numpy
+from assignment3.util.data_utils import load_dataset, get_train_test_data, timer, train_test_to_numpy, convert_to_numpy
 
 _DATASET_ID = 43723
 _DATASET_PATH = 'data/toronto_rental.csv'
@@ -16,8 +13,6 @@ _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
 _TEST_RUN = True
-_RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
-                                       SelfMadeRandomForest, LLMRandomForestRegressor]
 
 _OUTPUT_FOLDER = Path('output/toronto_rental')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'

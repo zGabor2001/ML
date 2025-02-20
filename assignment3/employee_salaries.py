@@ -3,14 +3,12 @@ from typing import Tuple
 import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
-from assignment2.model import ScratchRandomForest as SelfMadeRandomForest
-from assignment2.model.llm_random_forest import LLMRandomForestRegressor
-from assignment2.util.data_utils import load_dataset, get_train_test_data, timer, convert_to_numpy
+
+from assignment3.util.data_utils import load_dataset, get_train_test_data, timer, convert_to_numpy
 
 _DATASET_ID = 42125
 _DATASET_PATH = 'data/employee_salaries.csv'
@@ -18,8 +16,6 @@ _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
 _TEST_RUN = True
-_RANDOM_FOREST_CLASSES_FOR_TRAINING = [RandomForestRegressor,
-                                       SelfMadeRandomForest, LLMRandomForestRegressor]
 
 _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'

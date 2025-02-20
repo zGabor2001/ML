@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import pandas as pd
 
 from assignment3.model.base_model import BaseRegressor
+from assignment3.util.data_utils import get_rmse
 
 
 class LogisticRegressor(BaseRegressor):
@@ -18,10 +18,6 @@ class LogisticRegressor(BaseRegressor):
               epochs: int = 100,
               batch_size: int = 32,
               lr: float = 0.001):
-        if isinstance(X_train, pd.DataFrame) or isinstance(X_train, pd.Series):
-            X_train = X_train.to_numpy()
-        if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
-            y_train = y_train.to_numpy()
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
         X_train = torch.tensor(X_train, dtype=torch.float32).to(self.device)
@@ -45,7 +41,6 @@ class LogisticRegressor(BaseRegressor):
             predictions = self.model(X_test)
         return predictions.cpu().numpy()
 
-    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray):
-        predictions = self.predict(X_test)
-        mse = np.mean((predictions - y_test.to_numpy()) ** 2)
-        print(f"Mean Squared Error: {mse:.4f}")
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray):
+        rmse = get_rmse(y_pred=predictions, y_true=y_test)
+        print(f"Root Mean Squared Error: {rmse:.4f}")

@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Tuple
-import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
