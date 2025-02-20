@@ -1,14 +1,17 @@
 from autogluon.tabular import TabularDataset, TabularPredictor
 from flaml import AutoML
+import pandas as pd
 
 
-def run_automl_tables(label, train_data, test_data):
-    predictor = TabularPredictor(label=label).fit(
+def run_automl_tables(target_variable, X_train, y_train, X_test, y_test):
+    train_data = pd.concat([X_train, y_train], axis=1)
+
+    predictor = TabularPredictor(label=target_variable).fit(
         train_data,
         num_gpus=1
     )
 
-    autogluon_predictions = predictor.predict(test_data)
+    autogluon_predictions = predictor.predict(X_test)
 
     automl = AutoML()
     automl_settings = {
@@ -18,8 +21,8 @@ def run_automl_tables(label, train_data, test_data):
         "use_gpu": True
     }
 
-    automl.fit(X_train=train_data.drop(columns=['target']), y_train=train_data['target'], **automl_settings)
+    automl.fit(X_train=X_train, y_train=y_train, **automl_settings)
 
-    flaml_predictions = automl.predict(test_data.drop(columns=['target']))
+    flaml_predictions = automl.predict(X_test)
 
     return autogluon_predictions, flaml_predictions

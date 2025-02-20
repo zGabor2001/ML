@@ -3,7 +3,7 @@ from assignment3.model.lightgbm_regressor import LightGBMRegressor
 from assignment3.model.xgboost_regressor import XGBoostRegressor
 from assignment3.model.mlp_regressor import MLPRegressor
 from assignment3.model.fnn_regressor import FNNRegressor
-
+from assignment3.automl.run_automl import run_automl_tables
 from assignment3.toronto_rental import prepare_toronto_rental_dataset
 from assignment3.energy_efficiency import prepare_energy_efficiency_dataset
 from assignment3.employee_salaries import prepare_employee_salaries_dataset
@@ -26,6 +26,8 @@ def train_on_all_datasets():
         print(f"\nTraining on dataset: {name}")
 
         x_train, x_test, y_train, y_test = dataset_func()
+
+        #run_automl_tables('1', x_train, x_test, y_train, y_test)
 
         run_training_on_preprocessed_dataset(
             x_train=x_train,
