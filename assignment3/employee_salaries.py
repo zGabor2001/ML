@@ -15,7 +15,7 @@ _DATASET_PATH = 'data/employee_salaries.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'current_annual_salary'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
+_TEST_RUN = False
 
 _OUTPUT_FOLDER = Path('output/employee_salaries')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
@@ -25,7 +25,11 @@ _OUTPUT_HYPERPARAMETERS_RESULTS = _OUTPUT_HYPERPARAMETERS_FOLDER / 'results.csv'
 @timer
 def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
-    df = df.iloc[:100, :]
+
+    if _TEST_RUN:
+        df = df.iloc[:100, :]
+    print("Dimensions for training:", df.shape)
+
     # split date_first_hired into year, month, day
     date_first_hired = pd.to_datetime(df['date_first_hired'])
     df['year_first_hired'] = date_first_hired.dt.year

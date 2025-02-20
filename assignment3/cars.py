@@ -13,8 +13,7 @@ _DATASET_PATH = 'data/cars.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
-
+_TEST_RUN = False
 
 _OUTPUT_FOLDER = Path('output/cars')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
@@ -27,6 +26,8 @@ def prepare_cars_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
 
     if _TEST_RUN:
         df = df.iloc[:100, :]
+
+    print("Dimensions for training:", df.shape)
 
     X = df.drop(columns=[_TARGET_VARIABLE])
 
@@ -42,7 +43,7 @@ def prepare_cars_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
             ('num', numerical_transformer, numerical_cols),
             ('cat', categorical_transformer, categorical_cols)
         ])
-    
+
     pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
 
     x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)

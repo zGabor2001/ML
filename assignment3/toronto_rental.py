@@ -12,7 +12,7 @@ _DATASET_PATH = 'data/toronto_rental.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = True
+_TEST_RUN = False
 
 _OUTPUT_FOLDER = Path('output/toronto_rental')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
@@ -25,8 +25,11 @@ _OUTPUT_KNN_HYPERPARAMETER_PERMUTATIONS = _OUTPUT_KNN / 'parameter_permutations.
 @timer
 def prepare_toronto_rental_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
+
     if _TEST_RUN:
         df = df.iloc[:100, :]
+    print("Dimensions for training:", df.shape)
+
     df = df.iloc[:, 1:]
     df['Price'] = df['Price'].str.replace(
         ',', '').astype(float)
