@@ -38,30 +38,33 @@ def train_on_all_datasets():
 
 
 def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
-    # logistic = LogisticRegressor(input_dim=x_train.shape[1])
-    # logistic.train(X_train=x_train,
-    #                y_train=y_train,
-    #                epochs=1,
-    #                batch_size=32,
-    #                lr=0.001)
-    # log_predictions = logistic.predict(x_test)
-    # logistic.evaluate(predictions=log_predictions, y_test=y_test)
+    logistic = LogisticRegressor(input_dim=x_train.shape[1])
+    logistic.train(X_train=x_train,
+                   y_train=y_train,
+                   epochs=1,
+                   batch_size=32,
+                   lr=0.001)
+    log_predictions = logistic.predict(x_test)
+    logistic.evaluate(predictions=log_predictions, y_test=y_test)
 
-    # xgboost = XGBoostRegressor(device='gpu')
-    # xgboost.train(X_train=x_train, y_train=y_train, num_boost_round=1)
-    # xgb_predictions = xgboost.predict(x_test)
-    # xgboost.evaluate(predictions=xgb_predictions, y_test=y_test)
+    xgboost = XGBoostRegressor(device='gpu')
+    xgboost.train(X_train=x_train, y_train=y_train, num_boost_round=1)
+    xgb_predictions = xgboost.predict(x_test)
+    xgboost.evaluate(predictions=xgb_predictions, y_test=y_test)
 
-    # lgb = LightGBMRegressor(device='gpu')
-    # lgb.train(X_train=x_train,
-    #           y_train=y_train,
-    #           num_boost_round=1)
-    # lgb_predictions = lgb.predict(X_test=x_test)
-    # lgb.evaluate(predictions=lgb_predictions, y_test=y_test)
+    lgb = LightGBMRegressor(device='gpu')
+    lgb.train(X_train=x_train,
+              y_train=y_train,
+              num_boost_round=1)
+    lgb_predictions = lgb.predict(X_test=x_test)
+    lgb.evaluate(predictions=lgb_predictions, y_test=y_test)
 
     fnn = FNNRegressor(input_dim=x_train.shape[1])
     fnn.train(X_train=x_train, y_train=y_train, epochs=1, batch_size=32, lr=0.001)
     fnn_predictions = fnn.predict(X_test=x_test)
     fnn.evaluate(predictions=fnn_predictions, y_test=y_test)
 
-
+    mlp = MLPRegressor(input_dim=x_train.shape[1])
+    mlp.train(X_train=x_train, y_train=y_train, epochs=1, batch_size=32, lr=0.001)
+    mlp_predictions = mlp.predict(X_test=x_test)
+    mlp.evaluate(predictions=mlp_predictions, y_test=y_test)
