@@ -52,6 +52,6 @@ def prepare_toronto_rental_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray
     x_train = preprocessing_pipeline.fit_transform(x_train)
     x_test = preprocessing_pipeline.transform(x_test)
 
-    convert_to_numpy(x_train, x_test, y_train, y_test)
+    x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
 
     return x_train, x_test, y_train, y_test

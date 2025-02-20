@@ -74,4 +74,4 @@ def get_rmse(y_pred, y_true):
 
 
 def convert_to_numpy(*args: pd.DataFrame | np.ndarray | pd.Series) -> tuple[np.ndarray, ...]:
-    return tuple(arg.to_numpy() if isinstance(arg, pd.DataFrame) else arg for arg in args)
+    return tuple(arg.to_numpy() if isinstance(arg, pd.DataFrame) or isinstance(arg, pd.Series) else arg for arg in args)

@@ -50,6 +50,6 @@ def prepare_cars_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
     x_train = pipeline.fit_transform(x_train)
     x_test = pipeline.transform(x_test)
 
-    convert_to_numpy(x_train, x_test, y_train, y_test)
+    x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
 
     return x_train, x_test, y_train, y_test

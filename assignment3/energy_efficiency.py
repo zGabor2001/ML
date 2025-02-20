@@ -25,6 +25,6 @@ def prepare_energy_efficiency_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndar
 
     x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)
 
-    convert_to_numpy(x_train, x_test, y_train, y_test)
+    x_train, x_test, y_train, y_test = convert_to_numpy(x_train, x_test, y_train, y_test)
 
     return x_train, x_test, y_train, y_test
