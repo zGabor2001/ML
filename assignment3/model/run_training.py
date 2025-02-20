@@ -72,9 +72,12 @@ def train_on_all_datasets():
 
 
 def run_training_on_preprocessed_dataset(models: list):
+    results = []
     for model_info in models:
         model = model_info['model']
-        print(f"Training {model_info['name']}...")
+        print(f"\nTraining {model_info['name']}...")
         model.train(**model_info['train_params'])
         predictions = model.predict(**model_info['predict_params'])
-        model.evaluate(predictions=predictions, **model_info['evaluate_params'])
+        rmse = model.evaluate(predictions=predictions, **model_info['evaluate_params'])
+        results.append([model, rmse])
+    print(results)

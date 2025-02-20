@@ -23,7 +23,8 @@ class XGBoostRegressor(BaseRegressor):
     def predict(self, X_test: np.ndarray):
         dtest = xgb.DMatrix(X_test)
         return self.model.predict(dtest)
-
-    def evaluate(self, predictions: np.ndarray, y_test):
+    
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> float:
         rmse = get_rmse(y_pred=predictions, y_true=y_test)
-        print(f"Mean Squared Error: {rmse:.4f}")
+        print(f"Root Mean Squared Error: {rmse:.4f}")
+        return rmse

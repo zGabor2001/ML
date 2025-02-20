@@ -47,6 +47,7 @@ class FNNRegressor(BaseRegressor):
             predictions = self.model(X_test)
         return predictions.cpu().numpy()
 
-    def evaluate(self, predictions: np.ndarray, y_test):
+    def evaluate(self, predictions: np.ndarray, y_test) -> float:
         rmse = get_rmse(y_pred=predictions, y_true=y_test)
         print(f"Mean Squared Error: {rmse:.4f}")
+        return rmse
