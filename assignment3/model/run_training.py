@@ -59,5 +59,9 @@ def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
     # lgb_predictions = lgb.predict(X_test=x_test)
     # lgb.evaluate(predictions=lgb_predictions, y_test=y_test)
 
-    fnn = FNNRegressor()
+    fnn = FNNRegressor(input_dim=x_train.shape[1])
+    fnn.train(X_train=x_train, y_train=y_train, epochs=1, batch_size=32, lr=0.001)
+    fnn_predictions = fnn.predict(X_test=x_test)
+    fnn.evaluate(predictions=fnn_predictions, y_test=y_test)
+
 
