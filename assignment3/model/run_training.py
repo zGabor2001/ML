@@ -52,4 +52,12 @@ def run_training_on_preprocessed_dataset(x_train, x_test, y_train, y_test):
     # xgb_predictions = xgboost.predict(x_test)
     # xgboost.evaluate(predictions=xgb_predictions, y_test=y_test)
 
-    lgb = LightGBMRegressor()
+    # lgb = LightGBMRegressor(device='gpu')
+    # lgb.train(X_train=x_train,
+    #           y_train=y_train,
+    #           num_boost_round=1)
+    # lgb_predictions = lgb.predict(X_test=x_test)
+    # lgb.evaluate(predictions=lgb_predictions, y_test=y_test)
+
+    fnn = FNNRegressor()
+
