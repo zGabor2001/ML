@@ -1,9 +1,10 @@
-from base_model import BaseRegressor
 import xgboost as xgb
 import numpy as np
 
+from assignment3.model.base_model import BaseRegressor
+from assignment3.util.data_utils import get_rmse
 
-# XGBoost Regressor
+
 class XGBoostRegressor(BaseRegressor):
     def __init__(self, device='cpu'):
         super(XGBoostRegressor, self).__init__(device)
@@ -19,11 +20,11 @@ class XGBoostRegressor(BaseRegressor):
         }
         self.model = xgb.train(params, dtrain, num_boost_round=num_boost_round)
 
-    def predict(self, X_test):
+    def predict(self, X_test: np.ndarray):
         dtest = xgb.DMatrix(X_test)
         return self.model.predict(dtest)
-
-    def evaluate(self, X_test, y_test):
-        predictions = self.predict(X_test)
-        mse = np.mean((predictions - y_test) ** 2)
-        print(f"Mean Squared Error: {mse:.4f}")
+    
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> float:
+        rmse = get_rmse(y_pred=predictions, y_true=y_test)
+        print(f"Root Mean Squared Error: {rmse:.4f}")
+        return rmse
