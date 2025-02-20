@@ -1,4 +1,5 @@
 import xgboost as xgb
+import numpy as np
 
 from assignment3.model.base_model import BaseRegressor
 from assignment3.util.data_utils import get_rmse
@@ -24,5 +25,5 @@ class XGBoostRegressor(BaseRegressor):
         return self.model.predict(dtest)
 
     def evaluate(self, predictions: np.ndarray, y_test):
-        rmse = get_rmse()
+        rmse = get_rmse(y_pred=predictions, y_true=y_test)
         print(f"Mean Squared Error: {rmse:.4f}")
