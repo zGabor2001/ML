@@ -1,6 +1,7 @@
-from base_model import BaseRegressor
 import lightgbm as lgb
 import numpy as np
+from assignment3.model.base_model import BaseRegressor
+from assignment3.util.data_utils import get_rmse
 
 
 class LightGBMRegressor(BaseRegressor):
@@ -20,7 +21,7 @@ class LightGBMRegressor(BaseRegressor):
     def predict(self, X_test):
         return self.model.predict(X_test)
 
-    def evaluate(self, X_test, y_test):
-        predictions = self.predict(X_test)
-        mse = np.mean((predictions - y_test) ** 2)
-        print(f"Mean Squared Error: {mse:.4f}")
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> float:
+        rmse = get_rmse(y_pred=predictions, y_true=y_test)
+        print(f"Root Mean Squared Error: {rmse:.4f}")
+        return rmse
