@@ -1,0 +1,21 @@
+,dataset,model,train_params,RMSE
+0,toronto_rental,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",2235.2125877836656
+1,toronto_rental,XGBoost Regressor,{'num_boost_round': 100},2393.391975442879
+2,toronto_rental,LightGBM Regressor,{'num_boost_round': 100},18790.59554995488
+3,toronto_rental,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",2269.738037706055
+4,toronto_rental,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",1140.4566188794422
+0,employee_salaries,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",83675.31255082987
+1,employee_salaries,XGBoost Regressor,{'num_boost_round': 100},4655.958910121965
+2,employee_salaries,LightGBM Regressor,{'num_boost_round': 100},4326.293302671205
+3,employee_salaries,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",78781.59268056488
+4,employee_salaries,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",11473.250033287948
+0,energy_efficiency,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",225.46669760861832
+1,energy_efficiency,XGBoost Regressor,{'num_boost_round': 100},0.767138906565663
+2,energy_efficiency,LightGBM Regressor,{'num_boost_round': 100},0.5310032758903022
+3,energy_efficiency,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",19.099267614571392
+4,energy_efficiency,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",4.468165226636143
+0,cars,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23624.41645288638
+1,cars,XGBoost Regressor,{'num_boost_round': 100},1395.6966382681908
+2,cars,LightGBM Regressor,{'num_boost_round': 100},1974.1567152988898
+3,cars,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23619.88152339721
+4,cars,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23548.94513899592
