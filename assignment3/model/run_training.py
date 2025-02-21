@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from assignment3.model.logistic_regressor import LogisticRegressor
 from assignment3.model.lightgbm_regressor import LightGBMRegressor
 from assignment3.model.xgboost_regressor import XGBoostRegressor
@@ -21,7 +23,9 @@ def get_datasets():
 
 def train_on_all_datasets():
 
-    datasets = get_datasets()
+    datasets: dict = get_datasets()
+
+    results_on_all_datasets: list = []
 
     for name, dataset_func in datasets.items():
         print(f"\nTraining on dataset: {name}")
@@ -32,52 +36,68 @@ def train_on_all_datasets():
 
         models = [
             {
+                'dataset': name,
                 'name': 'Logistic Regression',
                 'model': LogisticRegressor(input_dim=x_train.shape[1]),
-                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 1, 'batch_size': 32, 'lr': 0.001},
+                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 100, 'batch_size': 32, 'lr': 0.001},
                 'predict_params': {'X_test': x_test},
                 'evaluate_params': {'y_test': y_test}
             },
             {
+                'dataset': name,
                 'name': 'XGBoost Regressor',
                 'model': XGBoostRegressor(device='gpu'),
-                'train_params': {'X_train': x_train, 'y_train': y_train, 'num_boost_round': 1},
+                'train_params': {'X_train': x_train, 'y_train': y_train, 'num_boost_round': 100},
                 'predict_params': {'X_test': x_test},
                 'evaluate_params': {'y_test': y_test}
             },
             {
+                'dataset': name,
                 'name': 'LightGBM Regressor',
                 'model': LightGBMRegressor(device='gpu'),
-                'train_params': {'X_train': x_train, 'y_train': y_train, 'num_boost_round': 1},
+                'train_params': {'X_train': x_train, 'y_train': y_train, 'num_boost_round': 100},
                 'predict_params': {'X_test': x_test},
                 'evaluate_params': {'y_test': y_test}
             },
             {
+                'dataset': name,
                 'name': 'FNN Regressor',
                 'model': FNNRegressor(input_dim=x_train.shape[1]),
-                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 1, 'batch_size': 32, 'lr': 0.001},
+                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 100, 'batch_size': 32, 'lr': 0.001},
                 'predict_params': {'X_test': x_test},
                 'evaluate_params': {'y_test': y_test}
             },
             {
+                'dataset': name,
                 'name': 'MLP Regressor',
                 'model': MLPRegressor(input_dim=x_train.shape[1]),
-                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 1, 'batch_size': 32, 'lr': 0.001},
+                'train_params': {'X_train': x_train, 'y_train': y_train, 'epochs': 100, 'batch_size': 32, 'lr': 0.001},
                 'predict_params': {'X_test': x_test},
                 'evaluate_params': {'y_test': y_test}
             }
         ]
 
-        run_training_on_preprocessed_dataset(models=models)
+        results_on_all_datasets.append(
+            pd.DataFrame(run_training_on_preprocessed_dataset(models=models))
+        )
+    df_results: pd.DataFrame = pd.concat(results_on_all_datasets, axis=0)
+    df_results.to_csv('train_results.csv')
 
 
-def run_training_on_preprocessed_dataset(models: list):
-    results = []
+def run_training_on_preprocessed_dataset(models: list) -> dict:
+    results: dict = {'dataset': [], 'model': [], 'train_params': [], 'RMSE': []}
     for model_info in models:
         model = model_info['model']
         print(f"\nTraining {model_info['name']}...")
         model.train(**model_info['train_params'])
-        predictions = model.predict(**model_info['predict_params'])
+        predictions: np.ndarray = model.predict(**model_info['predict_params'])
         rmse = model.evaluate(predictions=predictions, **model_info['evaluate_params'])
-        results.append([model, rmse])
-    print(results)
+        results['dataset'].append(model_info['dataset'])
+        results['model'].append(model_info['name'])
+        train_params: dict = {key: model_info['train_params'][key]
+                              for key in model_info['train_params']
+                              if key not in {'X_train', 'y_train'}}
+        results['train_params'].append(train_params.copy())
+        results['RMSE'].append(rmse)
+    return results
+
