@@ -3,7 +3,7 @@ from typing import Type
 
 from assignment3.model.base_model import BaseRegressor
 
-@dataclass
+@dataclass(frozen=True)
 class ModelConfig:
     name: str
     model_cls: Type[BaseRegressor]

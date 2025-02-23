@@ -1,7 +1,9 @@
 import random
 
+import pandas as pd
 
 from assignment3.simulated_annealing import ModelConfig
+
 
 class CandidateSolutionParam:
 
@@ -13,7 +15,7 @@ class CandidateSolutionParam:
         else:
             if current_index > len(values) - 1:
                 raise ValueError(
-                    f'Index of current value {current_index} is outside the range of available values 0 to {len(values)}')
+                    f'Index of current value {current_index} is outside the range of available values 0 to {len(values) - 1}')
             self._current_index = current_index
 
     @property
@@ -30,9 +32,9 @@ class CandidateSolutionParam:
 
 class CandidateSolution:
 
-    # TODO: add type hints for test and train datasets
-    def __init__(self, model_config: ModelConfig, params: list[CandidateSolutionParam], x_train, y_train, x_test, y_test):
-        self._model_config = model_config
+    def __init__(self, model_config: ModelConfig, params: list[CandidateSolutionParam], x_train: pd.DataFrame,
+                 y_train: pd.DataFrame, x_test: pd.DataFrame, y_test: pd.DataFrame):
+        self.model = model_config
         self._params = params
         self._x_train = x_train
         self._y_train = y_train
@@ -40,9 +42,9 @@ class CandidateSolution:
         self._y_test = y_test
         self._score = None
 
-
     @classmethod
-    def from_model_config(cls, model_config: ModelConfig, x_train, y_train, x_test, y_test) -> 'CandidateSolution':
+    def from_model_config(cls, model_config: ModelConfig, x_train: pd.DataFrame, y_train: pd.DataFrame,
+                          x_test: pd.DataFrame, y_test: pd.DataFrame) -> 'CandidateSolution':
         params = [CandidateSolutionParam(name, values) for name, values in model_config.parameters.items()]
         return cls(model_config, params, x_train, y_train, x_test, y_test)
 
@@ -50,19 +52,22 @@ class CandidateSolution:
     def score(self) -> float:
         if self._score is not None:
             return self._score
-        model = self._model_config.model_cls(self._model_config.training_device)
-        model.train(self._x_train, self._y_train)
-
+        model = self.model.model_cls(self.model.training_device)
         kwargs = {param.name: param.current_value for param in self._params}
-        # TODO: add kwargs to BaseRegressor
-        model.predict(self._x_test, **kwargs)
+        model.train(self._x_train, self._y_train, **kwargs)
+        model.predict(self._x_test)
         result = model.evaluate(self._x_test, self._y_test)
         self._score = result
         return result
-
 
     def neighboring_solution(self, neighbor_range: float) -> 'CandidateSolution':
         new_params = self._params.copy()
         param_index = random.randrange(len(self._params))
         new_params[param_index] = self._params[param_index].neighboring_solution(neighbor_range)
-        return CandidateSolution(self._model_config, new_params, self._x_train, self._y_train, self._x_test, self._y_test)
+        return CandidateSolution(self.model, new_params, self._x_train, self._y_train, self._x_test,
+                                 self._y_test)
+
+    def to_dict(self, compute_score: bool = False) -> dict[str, any]:
+        score = self.score if compute_score else self._score
+        return ({"model": self.model.name, "score": score} |
+                {param.name: param.current_value for param in self._params})
