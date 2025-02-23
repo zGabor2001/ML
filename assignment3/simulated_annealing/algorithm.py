@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 
 import pandas as pd
+import numpy as np
 
 from assignment3.simulated_annealing import ModelConfig
 from assignment3.simulated_annealing.solution import CandidateSolution
@@ -14,10 +15,10 @@ class SimulatedAnnealing:
     def __init__(
             self,
             model_configs: list[ModelConfig],
-            x_train: pd.DataFrame,
-            y_train: pd.DataFrame,
-            x_test: pd.DataFrame,
-            y_test: pd.DataFrame,
+            x_train: np.ndarray,
+            y_train: np.ndarray,
+            x_test: np.ndarray,
+            y_test: np.ndarray,
             min_temp: float | None = None,
             max_time: timedelta | None = None,
             max_iter: int | None = None,
@@ -46,7 +47,7 @@ class SimulatedAnnealing:
         self._start_time: float = 0.0
         self._tick: int = 0
         self._model_solutions: dict[ModelConfig, CandidateSolution] = {}
-        self._current_model: ModelConfig | None= None
+        self._current_model: ModelConfig | None = None
         self._previous_solutions: list[dict[str, any]] = []
         self._temperature: float = 0
 
@@ -141,4 +142,4 @@ class SimulatedAnnealing:
 
     def _accept_solutions_delta(self, score_delta: float) -> bool:
         return score_delta > 0 or (
-                    self._temperature > 0 and random.random() < math.exp(score_delta / self._temperature))
+                self._temperature > 0 and random.random() < math.exp(score_delta / self._temperature))

@@ -1,6 +1,6 @@
 import random
 
-import pandas as pd
+import numpy as np
 
 from assignment3.simulated_annealing import ModelConfig
 
@@ -32,8 +32,8 @@ class CandidateSolutionParam:
 
 class CandidateSolution:
 
-    def __init__(self, model_config: ModelConfig, params: list[CandidateSolutionParam], x_train: pd.DataFrame,
-                 y_train: pd.DataFrame, x_test: pd.DataFrame, y_test: pd.DataFrame):
+    def __init__(self, model_config: ModelConfig, params: list[CandidateSolutionParam], x_train: np.ndarray,
+                 y_train: np.ndarray, x_test: np.ndarray, y_test: np.ndarray):
         self.model = model_config
         self._params = params
         self._x_train = x_train
@@ -43,8 +43,8 @@ class CandidateSolution:
         self._score = None
 
     @classmethod
-    def from_model_config(cls, model_config: ModelConfig, x_train: pd.DataFrame, y_train: pd.DataFrame,
-                          x_test: pd.DataFrame, y_test: pd.DataFrame) -> 'CandidateSolution':
+    def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
+                          x_test: np.ndarray, y_test: np.ndarray) -> 'CandidateSolution':
         params = [CandidateSolutionParam(name, values) for name, values in model_config.parameters.items()]
         return cls(model_config, params, x_train, y_train, x_test, y_test)
 
