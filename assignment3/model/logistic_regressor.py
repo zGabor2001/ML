@@ -8,7 +8,7 @@ from assignment3.util.data_utils import get_rmse
 
 
 class LogisticRegressor(BaseRegressor):
-    def __init__(self, input_dim, device=None):
+    def __init__(self, input_dim, device='cpu'):
         super(LogisticRegressor, self).__init__(device)
         self.model = nn.Linear(input_dim, 1).to(device)
 

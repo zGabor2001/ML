@@ -13,7 +13,7 @@ _DATASET_PATH = 'data/cars.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Price'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = False
+_TEST_RUN = True
 
 _OUTPUT_FOLDER = Path('output/cars')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'

@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from assignment3.simulated_annealing import ModelConfig
+from assignment3.simulated_annealing.config import ModelConfig
 
 
 class CandidateSolutionParam:
@@ -42,21 +42,41 @@ class CandidateSolution:
         self._y_test = y_test
         self._score = None
 
+    # @classmethod
+    # def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
+    #                       x_test: np.ndarray, y_test: np.ndarray) -> 'CandidateSolution':
+    #     params = [CandidateSolutionParam(name, values) for name, values in model_config.parameters.items()]
+    #     return cls(model_config, params, x_train, y_train, x_test, y_test)
+
     @classmethod
     def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
                           x_test: np.ndarray, y_test: np.ndarray) -> 'CandidateSolution':
-        params = [CandidateSolutionParam(name, values) for name, values in model_config.parameters.items()]
-        return cls(model_config, params, x_train, y_train, x_test, y_test)
+        tunable_params = [
+            CandidateSolutionParam(name, values)
+            for name, values in model_config.parameters.items()
+        ]
+
+        fixed_params = []
+        if hasattr(model_config, 'fixed_parameters') and model_config.fixed_parameters:
+            for name, value in model_config.fixed_parameters.items():
+                fixed_params.append(CandidateSolutionParam(name, [value]))
+
+        all_params = tunable_params + fixed_params
+
+        return cls(model_config, all_params, x_train, y_train, x_test, y_test)
 
     @property
     def score(self) -> float:
         if self._score is not None:
             return self._score
-        model = self.model.model_cls(self.model.training_device)
-        kwargs = {param.name: param.current_value for param in self._params}
-        model.train(self._x_train, self._y_train, **kwargs)
-        model.predict(self._x_test)
-        result = model.evaluate(self._x_test, self._y_test)
+        fixed_kwargs = getattr(self.model, 'fixed_parameters', {})
+        tunable_kwargs = {param.name: param.current_value for param in self._params if param.name not in fixed_kwargs}
+
+        model = self.model.model_cls(**fixed_kwargs, device=self.model.training_device)
+        #kwargs = {param.name: param.current_value for param in self._params}
+        model.train(self._x_train, self._y_train, **tunable_kwargs)
+        predictions = model.predict(self._x_test)
+        result = model.evaluate(predictions, self._y_test)
         self._score = result
         return result
 

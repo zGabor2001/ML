@@ -23,4 +23,5 @@ class ModelConfig:
     name: str
     model_cls: Type[BaseRegressor]
     parameters: dict[str, list[any]]
+    fixed_parameters: dict
     training_device: str | None = None

@@ -9,7 +9,7 @@ _DATASET_PATH = 'data/energy_efficiency.csv'
 _TEST_SPLIT_SIZE = 0.2
 _TARGET_VARIABLE = 'Y1'
 _CORRELATION_DROP_THRESHOLD = 1.0
-_TEST_RUN = False
+_TEST_RUN = True
 
 _OUTPUT_FOLDER = Path('output/energy_efficiency')
 _OUTPUT_HYPERPARAMETERS_FOLDER = _OUTPUT_FOLDER / 'parameter_permutation'
