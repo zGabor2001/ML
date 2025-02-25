@@ -13,6 +13,7 @@ from assignment3.employee_salaries import prepare_employee_salaries_dataset
 from assignment3.cars import prepare_cars_dataset
 from assignment3.simulated_annealing.algorithm import SimulatedAnnealing
 from assignment3.simulated_annealing.config import ModelConfig
+from assignment3.util.data_utils import timer
 
 
 logging.basicConfig(
@@ -91,6 +92,7 @@ def train_on_all_datasets():
     df_results.to_csv('train_results.csv')
 
 
+@timer
 def run_training_on_preprocessed_dataset(models: list) -> dict:
     results: dict = {'dataset': [], 'model': [], 'train_params': [], 'STD_DEV': [], 'RMSE': [], 'R_2': []}
 

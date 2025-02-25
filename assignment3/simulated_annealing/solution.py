@@ -42,12 +42,6 @@ class CandidateSolution:
         self._y_test = y_test
         self._score = None
 
-    # @classmethod
-    # def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
-    #                       x_test: np.ndarray, y_test: np.ndarray) -> 'CandidateSolution':
-    #     params = [CandidateSolutionParam(name, values) for name, values in model_config.parameters.items()]
-    #     return cls(model_config, params, x_train, y_train, x_test, y_test)
-
     @classmethod
     def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
                           x_test: np.ndarray, y_test: np.ndarray) -> 'CandidateSolution':
