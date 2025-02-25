@@ -75,9 +75,9 @@ class CandidateSolution:
         model = self.model.model_cls(**fixed_kwargs, device=self.model.training_device)
         model.train(self._x_train, self._y_train, **tunable_kwargs)
         predictions = model.predict(self._x_test)
-        std_dev, rmse, r_squared = model.evaluate(predictions, self._y_test)
+        _, rmse, _ = model.evaluate(predictions, self._y_test)
         self._score = rmse
-        return std_dev, rmse, r_squared
+        return rmse
 
     def neighboring_solution(self, neighbor_range: float) -> 'CandidateSolution':
         new_params = self._params.copy()
