@@ -156,13 +156,14 @@ class SimulatedAnnealing:
         self._current_model = random.choice(self.model_configs)
         self.best_solution = self.current_solution
         self._previous_solutions = []
-        #logging.debug(f"Initial solution: {self.current_solution.to_dict(compute_score=True)}")
+        logging.debug(f"Initial solution: {self.current_solution.to_dict(compute_score=True)}")
 
         self._temperature = self.initial_temperature or self._generate_initial_temperature()
         if self.min_temp is None:
             self.min_temp = 0.001 * self._temperature
 
-        while not self._halting_condition():
+        #while not self._halting_condition():
+        while not self._halting_condition() and self._step <= 2:
             logging.info(f"Step: {self._step}, Temperature: {self._temperature:.2f}")
             for i in range(self.iterations_per_step):
                 logging.debug(f"Iteration {i} at step {self._step}")

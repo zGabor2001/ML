@@ -25,3 +25,12 @@ class ModelConfig:
     parameters: dict[str, list[any]]
     fixed_parameters: dict
     training_device: str | None = None
+
+    def __hash__(self):
+        return hash((
+            self.name,
+            self.model_cls,
+            frozenset((key, tuple(value)) for key, value in self.parameters.items()),
+            frozenset(self.fixed_parameters.items()) if self.fixed_parameters else None,
+            self.training_device
+        ))

@@ -125,10 +125,11 @@ def run_training_on_preprocessed_dataset(models: list) -> dict:
         best_hyperparams = {k: v for k, v in best_solution.to_dict().items() if k not in ['model', 'score']}
         print(f"Best hyperparameters for {model_info['name']}: {best_hyperparams}")
 
+        train_hyperparams = {k: v for k, v in best_hyperparams.items() if k != 'input_dim'}
         model = model_info['model']
         model.train(X_train=model_info['train_params']['X_train'],
                     y_train=model_info['train_params']['y_train'],
-                    **best_hyperparams)
+                    **train_hyperparams)
 
         predictions: np.ndarray = model.predict(**model_info['predict_params'])
         rmse = model.evaluate(predictions=predictions, **model_info['evaluate_params'])

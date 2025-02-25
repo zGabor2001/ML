@@ -73,7 +73,6 @@ class CandidateSolution:
         tunable_kwargs = {param.name: param.current_value for param in self._params if param.name not in fixed_kwargs}
 
         model = self.model.model_cls(**fixed_kwargs, device=self.model.training_device)
-        #kwargs = {param.name: param.current_value for param in self._params}
         model.train(self._x_train, self._y_train, **tunable_kwargs)
         predictions = model.predict(self._x_test)
         result = model.evaluate(predictions, self._y_test)
