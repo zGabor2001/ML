@@ -25,7 +25,7 @@ def prepare_cars_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     if _TEST_RUN:
-        df = df.iloc[:100, :]
+        df = df.iloc[:50, :]
 
     print("Dimensions for training:", df.shape)
 

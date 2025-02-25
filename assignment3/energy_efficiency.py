@@ -21,7 +21,7 @@ def prepare_energy_efficiency_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndar
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     if _TEST_RUN:
-        df = df.iloc[:100, :]
+        df = df.iloc[:50, :]
     print("Dimensions for training:", df.shape)
 
     x_train, x_test, y_train, y_test = get_train_test_data(df=df, target=_TARGET_VARIABLE, split_size=_TEST_SPLIT_SIZE)

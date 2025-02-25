@@ -92,7 +92,7 @@ def train_on_all_datasets():
 
 
 def run_training_on_preprocessed_dataset(models: list) -> dict:
-    results: dict = {'dataset': [], 'model': [], 'train_params': [], 'RMSE': []}
+    results: dict = {'dataset': [], 'model': [], 'train_params': [], 'STD_DEV': [], 'RMSE': [], 'R_2': []}
 
     for model_info in models:
         print(f"\nOptimizing hyperparameters for {model_info['name']}...")
@@ -132,30 +132,13 @@ def run_training_on_preprocessed_dataset(models: list) -> dict:
                     **train_hyperparams)
 
         predictions: np.ndarray = model.predict(**model_info['predict_params'])
-        rmse = model.evaluate(predictions=predictions, **model_info['evaluate_params'])
+        std_dev, rmse, r_squared = model.evaluate(predictions=predictions, **model_info['evaluate_params'])
 
         results['dataset'].append(model_info['dataset'])
         results['model'].append(model_info['name'])
         results['train_params'].append(best_hyperparams.copy())
+        results['STD_DEV'].append(std_dev)
         results['RMSE'].append(rmse)
+        results['R_2'].append(r_squared)
 
     return results
-
-
-# def run_training_on_preprocessed_dataset(models: list) -> dict:
-#     results: dict = {'dataset': [], 'model': [], 'train_params': [], 'RMSE': []}
-#     for model_info in models:
-#         model = model_info['model']
-#         print(f"\nTraining {model_info['name']}...")
-#         model.train(**model_info['train_params'])
-#         predictions: np.ndarray = model.predict(**model_info['predict_params'])
-#         rmse = model.evaluate(predictions=predictions, **model_info['evaluate_params'])
-#         results['dataset'].append(model_info['dataset'])
-#         results['model'].append(model_info['name'])
-#         train_params: dict = {key: model_info['train_params'][key]
-#                               for key in model_info['train_params']
-#                               if key not in {'X_train', 'y_train'}}
-#         results['train_params'].append(train_params.copy())
-#         results['RMSE'].append(rmse)
-#     return results
-

@@ -27,7 +27,7 @@ def prepare_employee_salaries_dataset() -> Tuple[np.ndarray, np.ndarray, np.ndar
     df = load_dataset(_DATASET_ID, _DATASET_PATH)
 
     if _TEST_RUN:
-        df = df.iloc[:100, :]
+        df = df.iloc[:50, :]
     print("Dimensions for training:", df.shape)
 
     # split date_first_hired into year, month, day

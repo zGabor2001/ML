@@ -66,7 +66,7 @@ class CandidateSolution:
         return cls(model_config, all_params, x_train, y_train, x_test, y_test)
 
     @property
-    def score(self) -> float:
+    def score(self) -> tuple[float, float, float]:
         if self._score is not None:
             return self._score
         fixed_kwargs = getattr(self.model, 'fixed_parameters', {})
@@ -75,9 +75,9 @@ class CandidateSolution:
         model = self.model.model_cls(**fixed_kwargs, device=self.model.training_device)
         model.train(self._x_train, self._y_train, **tunable_kwargs)
         predictions = model.predict(self._x_test)
-        result = model.evaluate(predictions, self._y_test)
-        self._score = result
-        return result
+        std_dev, rmse, r_squared = model.evaluate(predictions, self._y_test)
+        self._score = rmse
+        return std_dev, rmse, r_squared
 
     def neighboring_solution(self, neighbor_range: float) -> 'CandidateSolution':
         new_params = self._params.copy()

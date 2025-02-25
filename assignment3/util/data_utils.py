@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 from functools import wraps
 from sklearn.model_selection import train_test_split
 
@@ -79,3 +80,7 @@ def convert_to_numpy(*args: 'pd.DataFrame | np.ndarray | pd.Series') -> tuple[np
 
 def train_test_to_numpy(x_train, x_test, y_train, y_test) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return x_train.to_numpy(), x_test.to_numpy(), y_train.to_numpy(), y_test.to_numpy()
+
+
+def get_regression_performance_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[float, float, float]:
+    return np.std(y_true, ddof=1), np.sqrt(mean_squared_error(y_true, y_pred)), r2_score(y_true, y_pred)
