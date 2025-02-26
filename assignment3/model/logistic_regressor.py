@@ -8,9 +8,10 @@ from assignment3.util.data_utils import get_rmse
 
 
 class LogisticRegressor(BaseRegressor):
-    def __init__(self, input_dim, device=None):
+    def __init__(self, device=None):
         super(LogisticRegressor, self).__init__(device)
-        self.model = nn.Linear(input_dim, 1).to(device)
+        self.model = None
+        self.device = device
 
     def train(self,
               X_train: np.ndarray,
@@ -18,6 +19,8 @@ class LogisticRegressor(BaseRegressor):
               epochs: int = 100,
               batch_size: int = 32,
               lr: float = 0.001):
+        input_dim = X_train.shape[1]
+        self.model = nn.Linear(input_dim, 1).to(self.device)
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
         X_train = torch.tensor(X_train, dtype=torch.float32).to(self.device)

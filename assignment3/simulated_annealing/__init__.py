@@ -1,2 +1,2 @@
-from algorithm import SimulatedAnnealing
-from config import ModelConfig
+from .algorithm import SimulatedAnnealing
+from .config import ModelConfig
