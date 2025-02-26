@@ -41,6 +41,7 @@ class CandidateSolution:
         self._x_test = x_test
         self._y_test = y_test
         self._score = None
+        self.perf_metrics = None
 
     @classmethod
     def from_model_config(cls, model_config: ModelConfig, x_train: np.ndarray, y_train: np.ndarray,
@@ -49,16 +50,16 @@ class CandidateSolution:
         return cls(model_config, params, x_train, y_train, x_test, y_test)
 
     @property
-    def score(self) -> float:
+    def score(self) -> tuple[float, float, float]:
         if self._score is not None:
             return self._score
         model = self.model.model_cls(self.model.training_device)
         kwargs = {param.name: param.current_value for param in self._params}
         model.train(self._x_train, self._y_train, **kwargs)
         predictions = model.predict(self._x_test)
-        result = model.evaluate(predictions, self._y_test)
-        self._score = result
-        return result
+        std_dev, rmse, r2 = model.evaluate(predictions, self._y_test)
+        self._score = (std_dev, rmse, r2)
+        return std_dev, rmse, r2
 
     def neighboring_solution(self, neighbor_range: float) -> 'CandidateSolution':
         new_params = self._params.copy()
@@ -68,6 +69,7 @@ class CandidateSolution:
                                  self._y_test)
 
     def to_dict(self, compute_score: bool = False) -> dict[str, any]:
-        score = self.score if compute_score else self._score
-        return ({"model": self.model.name, "score": score} |
+        std_dev, rmse_score, r2 = self.score
+        score = rmse_score if compute_score else self._score
+        return ({"model": self.model.name, "score": score, "std_dev": std_dev, "r2": r2} |
                 {param.name: param.current_value for param in self._params})

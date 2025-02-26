@@ -176,8 +176,9 @@ class SimulatedAnnealing:
                     self._model_solutions[neighbor.model.name] = neighbor
                     self._current_model = neighbor.model.name
                     print(f"Accepted new solution: {neighbor.to_dict()}")
-                    if neighbor.score < self.best_solution.score:
+                    if neighbor.score[1] < self.best_solution.score[1]:
                         self.best_solution = neighbor
+                        neighbor.perf_metrics = self.best_solution.score
                         print(f"New best solution: {neighbor.to_dict()}")
             self._temperature = self._temperature * self.cooling_factor
             self._step += 1
@@ -225,8 +226,8 @@ class SimulatedAnnealing:
         return current.neighboring_solution(self.neighbor_range)
 
     def _calculate_solutions_delta(self, neighbor_solution: CandidateSolution) -> float:
-        current_rmse = self.current_solution.score
-        neighbor_rmse = neighbor_solution.score
+        _, current_rmse, _ = self.current_solution.score
+        _, neighbor_rmse, _ = neighbor_solution.score
         return current_rmse - neighbor_rmse
 
     def _accept_solutions_delta(self, score_delta: float) -> bool:
