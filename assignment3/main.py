@@ -106,7 +106,10 @@ def main():
             y_train=y_train,
             x_test=x_test,
             y_test=y_test,
-            max_time=timedelta(minutes=10)
+            initial_acceptance_rate = 0.95,
+            p_test_different_model = 0.1,
+            neighbor_range = 0.2,
+            max_time = timedelta(hours=2)
         )
         simulated_annealing.run()
         best_solution = simulated_annealing.best_solution
