@@ -44,7 +44,7 @@ class SimulatedAnnealing:
         The minimum temperature for the annealing process. Set to 0.001 * initial_temperature by default.
 
     max_time : timedelta, optional
-        The maximum time allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_iter is reached.
+        The maximum time allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_steps is reached.
 
     max_steps : int, optional
         The maximum number of steps (iterations) allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_time is reached.
