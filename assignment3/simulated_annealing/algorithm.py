@@ -44,10 +44,15 @@ class SimulatedAnnealing:
         The minimum temperature for the annealing process. Set to 0.001 * initial_temperature by default.
 
     max_time : timedelta, optional
-        The maximum time allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_iter is reached.
+        The maximum time allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_steps is reached.
 
     max_steps : int, optional
         The maximum number of steps (iterations) allowed for the algorithm to run. If not specified, the algorithm will run until min_temp or max_time is reached.
+
+    reheat_on_min_temp : bool, optional
+        Whether to reheat the temperature to the initial value when min_temp is reached. Default is False.
+        If set to true, the algorithm will continue running after reaching min_temp.
+        Max_time or max_steps will be used as halting conditions.
 
     p_test_different_model : float, optional
         The probability of testing a solution from a different model configuration on each iteration. Default is 0.25.
@@ -95,6 +100,7 @@ class SimulatedAnnealing:
             min_temp: float | None = None,
             max_time: timedelta | None = None,
             max_steps: int | None = None,
+            reheat_on_min_temp: bool = False,
             p_test_different_model: float = 0.25,
             neighbor_range: float = 0.25,
             initial_temperature: float | None = None,
@@ -102,6 +108,9 @@ class SimulatedAnnealing:
             cooling_factor: float = 0.95,
             iterations_per_step: int = 10,
     ):
+        if reheat_on_min_temp and not (max_time or max_steps):
+            raise ValueError("Reheat on min_temp requires max_time or max_steps to be set.")
+
         self.model_configs = model_configs
         self.x_train = x_train
         self.y_train = y_train
@@ -110,6 +119,7 @@ class SimulatedAnnealing:
         self.min_temp = min_temp
         self.max_time = max_time.total_seconds() if max_time is not None else None
         self.max_steps = max_steps
+        self.reheat_on_min_temp = reheat_on_min_temp
         self.p_test_different_model = p_test_different_model
         self.neighbor_range = neighbor_range
         self.initial_temperature = initial_temperature
@@ -149,7 +159,8 @@ class SimulatedAnnealing:
         self._previous_solutions = []
         print(f"Initial solution: {self.current_solution.to_dict(compute_score=True)}")
 
-        self._temperature = self.initial_temperature or self._generate_initial_temperature()
+        self.initial_temperature = self.initial_temperature or self._generate_initial_temperature()
+        self._temperature = self.initial_temperature
         if self.min_temp is None:
             self.min_temp = 0.001 * self._temperature
 
@@ -189,15 +200,20 @@ class SimulatedAnnealing:
         return temp
 
     def _halting_condition(self) -> bool:
-        if self._temperature < self.min_temp:
-            print("Minimum temperature reached. Halting now ...")
-            return True
         if self.max_steps is not None and self._step > self.max_steps:
             print("Maximum iterations reached. Halting now ...")
             return True
         if self.max_time is not None and time.time() - self._start_time >= self.max_time:
             print("Maximum time reached. Halting now ...")
             return True
+        if self._temperature < self.min_temp:
+            if self.reheat_on_min_temp:
+                print("Minimum temperature reached. Reheating ...")
+                self._temperature = self.initial_temperature
+                print(f"New temperature: {self._temperature:.2f}")
+            else:
+                print("Minimum temperature reached. Halting now ...")
+                return True
         return False
 
     def _get_neighboring_solution(self) -> CandidateSolution:

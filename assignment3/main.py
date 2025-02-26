@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Tuple, Callable
 
 import numpy as np
+import pandas as pd
 from datetime import timedelta
 
 from assignment3.cars import prepare_cars_dataset
@@ -23,6 +24,9 @@ class Dataset:
     folder: str
     prepare_func: Callable[[], Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]
 
+def save_ndarray_to_csv(array: np.ndarray, path: str):
+    df = pd.DataFrame(array)
+    df.to_csv(path, index=False)
 
 def main():
     datasets = [
@@ -97,8 +101,13 @@ def main():
     ]
 
     for dataset in datasets:
+        os.makedirs(f"assignment3/results/{dataset.folder}", exist_ok=True)
         print(f"Preparing dataset {dataset.name}")
         x_train, x_test, y_train, y_test = dataset.prepare_func()
+        save_ndarray_to_csv(x_train, f"assignment3/results/{dataset.folder}/x_train.csv")
+        save_ndarray_to_csv(x_test, f"assignment3/results/{dataset.folder}/x_test.csv")
+        save_ndarray_to_csv(y_train, f"assignment3/results/{dataset.folder}/y_train.csv")
+        save_ndarray_to_csv(y_test, f"assignment3/results/{dataset.folder}/y_test.csv")
         print(f"Running simulated annealing on dataset {dataset.name} with hyperparameters {models}")
         simulated_annealing = SimulatedAnnealing(
             model_configs=models,
@@ -109,15 +118,16 @@ def main():
             initial_acceptance_rate = 0.99,
             p_test_different_model = 0.2,
             neighbor_range = 0.5,
-            max_time = timedelta(hours=2)
+            max_time = timedelta(hours=1),
+            reheat_on_min_temp=True,
+            iterations_per_step=100
         )
         simulated_annealing.run()
         best_solution = simulated_annealing.best_solution
         print(f"Best solution for dataset {dataset.name}: {best_solution.to_dict()}")
         solutions_history = simulated_annealing.solutions_history_df
 
-        os.makedirs(f"results/{dataset.folder}", exist_ok=True)
-        solutions_history.to_csv(f"results/{dataset.folder}/simulated_annealing_results.csv")
+        solutions_history.to_csv(f"assignment3/results/{dataset.folder}/simulated_annealing_results.csv", index=False)
 
 if __name__ == "__main__":
     main()
