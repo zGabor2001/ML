@@ -4,7 +4,7 @@ from typing import Type
 from assignment3.model.base_model import BaseRegressor
 
 
-@dataclass(frozen=True)
+@dataclass
 class ModelConfig:
     """
     Configuration for a model to be trained

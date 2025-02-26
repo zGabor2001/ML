@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from assignment3.simulated_annealing import ModelConfig
+from .config import ModelConfig
 
 
 class CandidateSolutionParam:
@@ -55,8 +55,8 @@ class CandidateSolution:
         model = self.model.model_cls(self.model.training_device)
         kwargs = {param.name: param.current_value for param in self._params}
         model.train(self._x_train, self._y_train, **kwargs)
-        model.predict(self._x_test)
-        result = model.evaluate(self._x_test, self._y_test)
+        predictions = model.predict(self._x_test)
+        result = model.evaluate(predictions, self._y_test)
         self._score = result
         return result
 

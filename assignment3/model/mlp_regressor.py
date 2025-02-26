@@ -8,17 +8,21 @@ from assignment3.util.data_utils import get_rmse
 
 
 class MLPRegressor(BaseRegressor):
-    def __init__(self, input_dim, device=None):
+    def __init__(self, device=None):
         super(MLPRegressor, self).__init__(device)
+        self.model = None
+        self.device = device
+
+    def train(self, X_train, y_train, epochs=100, batch_size=32, lr=0.001):
+        input_dim = X_train.shape[1]
         self.model = nn.Sequential(
             nn.Linear(input_dim, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, 1)
-        ).to(device)
+        ).to(self.device)
 
-    def train(self, X_train, y_train, epochs=100, batch_size=32, lr=0.001):
         criterion = nn.MSELoss()
         optimizer = optim.Adam(self.model.parameters(), lr=lr)
         X_train = torch.tensor(X_train, dtype=torch.float32).to(self.device)

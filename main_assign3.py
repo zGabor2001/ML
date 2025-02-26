@@ -1,4 +1,4 @@
-from assignment3.model.run_training import train_on_all_datasets
+from assignment3.main import main
 
 if __name__ == "__main__":
-    train_on_all_datasets()
+   main()
