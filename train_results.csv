@@ -1,21 +1,21 @@
-,dataset,model,train_params,RMSE
-0,toronto_rental,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",2235.2125877836656
-1,toronto_rental,XGBoost Regressor,{'num_boost_round': 100},2393.391975442879
-2,toronto_rental,LightGBM Regressor,{'num_boost_round': 100},18790.59554995488
-3,toronto_rental,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",2269.738037706055
-4,toronto_rental,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",1140.4566188794422
-0,employee_salaries,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",83675.31255082987
-1,employee_salaries,XGBoost Regressor,{'num_boost_round': 100},4655.958910121965
-2,employee_salaries,LightGBM Regressor,{'num_boost_round': 100},4326.293302671205
-3,employee_salaries,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",78781.59268056488
-4,employee_salaries,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",11473.250033287948
-0,energy_efficiency,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",225.46669760861832
-1,energy_efficiency,XGBoost Regressor,{'num_boost_round': 100},0.767138906565663
-2,energy_efficiency,LightGBM Regressor,{'num_boost_round': 100},0.5310032758903022
-3,energy_efficiency,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",19.099267614571392
-4,energy_efficiency,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",4.468165226636143
-0,cars,Logistic Regression,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23624.41645288638
-1,cars,XGBoost Regressor,{'num_boost_round': 100},1395.6966382681908
-2,cars,LightGBM Regressor,{'num_boost_round': 100},1974.1567152988898
-3,cars,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23619.88152339721
-4,cars,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001}",23548.94513899592
+,dataset,model,train_params,STD_DEV,RMSE,R_2
+0,toronto_rental,Logistic Regression,"{'epochs': 200, 'batch_size': 16, 'lr': 0.001, 'input_dim': 6}",498.7988349803734,2161.262306183697,-19.860349861749764
+1,toronto_rental,XGBoost Regressor,{'num_boost_round': 50},498.7988349803734,280.0138940613497,0.6498405978583859
+2,toronto_rental,LightGBM Regressor,{'num_boost_round': 50},498.7988349803734,412.9563949726803,0.23842089248814102
+3,toronto_rental,FNN Regressor,"{'epochs': 50, 'batch_size': 64, 'lr': 0.01, 'input_dim': 6}",498.7988349803734,2137.2025533210553,-19.398488988477094
+4,toronto_rental,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.01, 'input_dim': 6}",498.7988349803734,463.5849660517277,0.04023409785769039
+0,employee_salaries,Logistic Regression,"{'epochs': 100, 'batch_size': 64, 'lr': 0.0001, 'input_dim': 15}",29157.8568763718,73559.65387268698,-6.071729577492181
+1,employee_salaries,XGBoost Regressor,{'num_boost_round': 50},29157.8568763718,10257.043644489475,0.8625037993310831
+2,employee_salaries,LightGBM Regressor,{'num_boost_round': 100},29157.8568763718,27734.746453478932,-0.005297704320513574
+3,employee_salaries,FNN Regressor,"{'epochs': 50, 'batch_size': 32, 'lr': 0.01, 'input_dim': 15}",29157.8568763718,72637.94077871398,-5.895620283767034
+4,employee_salaries,MLP Regressor,"{'epochs': 50, 'batch_size': 64, 'lr': 0.01, 'input_dim': 15}",29157.8568763718,3918.782280719448,0.9799299450214122
+0,energy_efficiency,Logistic Regression,"{'epochs': 50, 'batch_size': 32, 'lr': 0.01, 'input_dim': 9}",7.606737411298253,11.515004174763703,-1.5461784682032014
+1,energy_efficiency,XGBoost Regressor,{'num_boost_round': 50},7.606737411298253,1.2438829855740412,0.9702888339568533
+2,energy_efficiency,LightGBM Regressor,{'num_boost_round': 100},7.606737411298253,7.3293571482081195,-0.03155505381256285
+3,energy_efficiency,FNN Regressor,"{'epochs': 200, 'batch_size': 16, 'lr': 0.0001, 'input_dim': 9}",7.606737411298253,14.1732002817294,-2.8574161113510423
+4,energy_efficiency,MLP Regressor,"{'epochs': 200, 'batch_size': 16, 'lr': 0.0001, 'input_dim': 9}",7.606737411298253,3.568013082598217,0.7555367856059034
+0,cars,Logistic Regression,"{'epochs': 50, 'batch_size': 64, 'lr': 0.0001, 'input_dim': 18}",3742.362114249947,30496.628940057853,-72.78524878978205
+1,cars,XGBoost Regressor,{'num_boost_round': 200},3742.362114249947,1655.944091829917,0.7824509381847943
+2,cars,LightGBM Regressor,{'num_boost_round': 50},3742.362114249947,3707.7778664290977,-0.09066980499079769
+3,cars,FNN Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.01, 'input_dim': 18}",3742.362114249947,30364.348280717764,-72.14654256753806
+4,cars,MLP Regressor,"{'epochs': 100, 'batch_size': 32, 'lr': 0.001, 'input_dim': 18}",3742.362114249947,30437.9980501967,-72.50181180626792

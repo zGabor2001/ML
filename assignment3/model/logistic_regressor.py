@@ -4,11 +4,11 @@ import torch.optim as optim
 import numpy as np
 
 from assignment3.model.base_model import BaseRegressor
-from assignment3.util.data_utils import get_rmse
+from assignment3.util.data_utils import get_regression_performance_metrics
 
 
 class LogisticRegressor(BaseRegressor):
-    def __init__(self, input_dim, device=None):
+    def __init__(self, input_dim, device='cpu'):
         super(LogisticRegressor, self).__init__(device)
         self.model = nn.Linear(input_dim, 1).to(device)
 
@@ -41,7 +41,5 @@ class LogisticRegressor(BaseRegressor):
             predictions = self.model(X_test)
         return predictions.cpu().numpy()
 
-    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> float:
-        rmse = get_rmse(y_pred=predictions, y_true=y_test)
-        print(f"Root Mean Squared Error: {rmse:.4f}")
-        return rmse
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> tuple[float, float, float]:
+        return get_regression_performance_metrics(y_true=y_test, y_pred=predictions)
