@@ -115,12 +115,11 @@ def main():
             y_train=y_train,
             x_test=x_test,
             y_test=y_test,
-            initial_acceptance_rate = 0.99,
+            initial_acceptance_rate = 0.85,
             p_test_different_model = 0.2,
-            neighbor_range = 0.5,
+            neighbor_range = 0.25,
             max_time = timedelta(hours=1),
-            reheat_on_min_temp=True,
-            iterations_per_step=100
+            iterations_per_step=50
         )
         simulated_annealing.run()
         best_solution = simulated_annealing.best_solution
