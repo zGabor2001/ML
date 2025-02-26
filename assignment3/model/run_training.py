@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+from datetime import datetime
 from assignment3.model.logistic_regressor import LogisticRegressor
 from assignment3.model.lightgbm_regressor import LightGBMRegressor
 from assignment3.model.xgboost_regressor import XGBoostRegressor
@@ -89,7 +90,7 @@ def train_on_all_datasets():
             pd.DataFrame(run_training_on_preprocessed_dataset(models=models))
         )
     df_results: pd.DataFrame = pd.concat(results_on_all_datasets, axis=0)
-    df_results.to_csv('train_results.csv')
+    df_results.to_csv(f'train_results_{datetime.now().strftime("%H:%M:%S")}.csv')
 
 
 @timer
