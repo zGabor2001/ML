@@ -7,7 +7,7 @@ from datetime import timedelta
 import pandas as pd
 import numpy as np
 
-from assignment3.simulated_annealing.config  import ModelConfig
+from assignment3.simulated_annealing import ModelConfig
 from assignment3.simulated_annealing.solution import CandidateSolution
 
 
@@ -127,12 +127,7 @@ class SimulatedAnnealing:
 
     @property
     def current_solution(self) -> CandidateSolution:
-        parameters_as_tuple = tuple((key, tuple(value)) for key, value in self._current_model.parameters.items())
-
-        key = (self._current_model.name, self._current_model.model_cls, parameters_as_tuple,
-               self._current_model.training_device)
-
-        return self._model_solutions[key]
+        return self._model_solutions[self._current_model]
 
     @property
     def solutions_history_dict(self) -> list[dict]:
@@ -147,10 +142,7 @@ class SimulatedAnnealing:
         self._start_time = time.time()
         self._step = 1
         self._model_solutions = {
-            (config.name, config.model_cls,
-             tuple((key, tuple(value)) for key, value in config.parameters.items()),
-             config.training_device):
-            CandidateSolution.from_model_config(config, self.x_train, self.y_train, self.x_test, self.y_test)
+            config: CandidateSolution.from_model_config(config, self.x_train, self.y_train, self.x_test, self.y_test)
             for config in self.model_configs
         }
         self._current_model = random.choice(self.model_configs)

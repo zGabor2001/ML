@@ -2,7 +2,7 @@ import xgboost as xgb
 import numpy as np
 
 from assignment3.model.base_model import BaseRegressor
-from assignment3.util.data_utils import get_regression_performance_metrics
+from assignment3.util.data_utils import get_rmse
 
 
 class XGBoostRegressor(BaseRegressor):
@@ -24,5 +24,7 @@ class XGBoostRegressor(BaseRegressor):
         dtest = xgb.DMatrix(X_test)
         return self.model.predict(dtest)
     
-    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> tuple[float, float, float]:
-        return get_regression_performance_metrics(y_true=y_test, y_pred=predictions)
+    def evaluate(self, predictions: np.ndarray, y_test: np.ndarray) -> float:
+        rmse = get_rmse(y_pred=predictions, y_true=y_test)
+        print(f"Root Mean Squared Error: {rmse:.4f}")
+        return rmse
